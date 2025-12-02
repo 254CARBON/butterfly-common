@@ -1,0 +1,43 @@
+name: butterfly-common CI
+
+on:
+  pull_request:
+  push:
+    branches: [ main, master ]
+    tags: [ "v*" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Build and test
+        run: mvn -B -ntp verify
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK with deploy settings
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          server-id: internal
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+      - name: Publish to internal Maven
+        env:
+          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+          MAVEN_REPO_URL: ${{ secrets.MAVEN_REPO_URL }}
+        run: mvn -B -ntp -DskipTests deploy -DaltDeploymentRepository=internal::default::${MAVEN_REPO_URL}

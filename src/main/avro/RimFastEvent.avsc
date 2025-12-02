@@ -1,0 +1,98 @@
+{
+  "namespace": "com.z254.butterfly.common.hft.avro",
+  "type": "record",
+  "name": "RimFastEvent",
+  "doc": "High-frequency event schema for RIM updates. Minimized payload for throughput. New fields are always added with defaults for backward compatibility.",
+  "fields": [
+    {
+      "name": "rim_node_id",
+      "type": "string",
+      "doc": "Canonical RIM Node Identifier (rim:{nodeType}:{namespace}:{localId})"
+    },
+    {
+      "name": "event_id",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Optional globally unique event identifier (string or UUID)."
+    },
+    {
+      "name": "instrument_id",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Optional instrument identity when the rim_node_id is more general."
+    },
+    {
+      "name": "vector_timestamp",
+      "type": {
+        "type": "record",
+        "name": "VectorTimestamp",
+        "fields": [
+          {
+            "name": "event_ts_ms",
+            "type": "long",
+            "doc": "Timestamp of event creation (wall clock)"
+          },
+          {
+            "name": "ingest_ts_ms",
+            "type": "long",
+            "doc": "Timestamp of ingestion by RIM gateway"
+          },
+          {
+            "name": "logical_clock",
+            "type": "long",
+            "default": 0,
+            "doc": "Monotonic logical clock for ordering"
+          }
+        ]
+      }
+    },
+    {
+      "name": "critical_metrics",
+      "type": {
+        "type": "map",
+        "values": "double"
+      },
+      "doc": "Sparse key-value metrics (e.g., price, spread, risk_score)"
+    },
+    {
+      "name": "price",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "Optional point-in-time price from the fast-path feed."
+    },
+    {
+      "name": "volume",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "Optional trade or order-book volume associated with the event."
+    },
+    {
+      "name": "stress",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "Optional stress/pressure metric in range 0..1."
+    },
+    {
+      "name": "status",
+      "type": {
+        "type": "enum",
+        "name": "NodeStatus",
+        "symbols": ["OK", "WARN", "ALERT", "UNKNOWN", "OFFLINE"]
+      },
+      "default": "UNKNOWN",
+      "doc": "Health or operational status of the node"
+    },
+    {
+      "name": "source_topic",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Origin Kafka topic or stream label."
+    },
+    {
+      "name": "metadata",
+      "type": ["null", {"type": "map", "values": "string"}],
+      "default": null,
+      "doc": "Optional string metadata"
+    }
+  ]
+}

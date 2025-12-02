@@ -1,0 +1,183 @@
+{
+  "namespace": "com.z254.butterfly.common.plato.avro",
+  "type": "record",
+  "name": "PlatoEvent",
+  "doc": "Event schema for PLATO governance and orchestration events. Published when Specs, Artifacts, Proofs, or Plans change state. New fields are always added with defaults for backward compatibility.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": "string",
+      "doc": "Globally unique event identifier (UUID)"
+    },
+    {
+      "name": "event_type",
+      "type": {
+        "type": "enum",
+        "name": "PlatoEventType",
+        "symbols": [
+          "SPEC_CREATED",
+          "SPEC_UPDATED",
+          "SPEC_STATUS_CHANGED",
+          "SPEC_DELETED",
+          "ARTIFACT_CREATED",
+          "ARTIFACT_UPDATED",
+          "ARTIFACT_DEPLOYED",
+          "ARTIFACT_RETIRED",
+          "ARTIFACT_DELETED",
+          "PROOF_CREATED",
+          "PROOF_VERIFIED",
+          "PROOF_EXPIRED",
+          "PROOF_DELETED",
+          "PLAN_CREATED",
+          "PLAN_APPROVED",
+          "PLAN_REJECTED",
+          "PLAN_EXECUTING",
+          "PLAN_COMPLETED",
+          "PLAN_FAILED",
+          "PLAN_CANCELLED",
+          "ENGINE_INVOKED",
+          "GOVERNANCE_VIOLATION"
+        ]
+      },
+      "doc": "Type of PLATO event"
+    },
+    {
+      "name": "timestamp",
+      "type": "long",
+      "doc": "Event timestamp in milliseconds since epoch"
+    },
+    {
+      "name": "object_type",
+      "type": {
+        "type": "enum",
+        "name": "PlatoObjectType",
+        "symbols": ["SPEC", "ARTIFACT", "PROOF", "PLAN"]
+      },
+      "doc": "Type of PLATO object affected"
+    },
+    {
+      "name": "object_id",
+      "type": "string",
+      "doc": "PLATO object identifier (plato:{type}:{namespace}:{localId})"
+    },
+    {
+      "name": "object_version",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Version of the object at event time"
+    },
+    {
+      "name": "namespace",
+      "type": "string",
+      "doc": "Namespace of the affected object"
+    },
+    {
+      "name": "actor_id",
+      "type": "string",
+      "doc": "ID of the actor (user or system) that triggered the event"
+    },
+    {
+      "name": "previous_status",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Previous status for status change events"
+    },
+    {
+      "name": "new_status",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "New status for status change events"
+    },
+    {
+      "name": "engine",
+      "type": ["null", {
+        "type": "enum",
+        "name": "PlatoEngine",
+        "symbols": ["SYNTHPLANE", "FEATUREFORGE", "LAWMINER", "SPECMINER", "RESEARCHOS", "EVIDENCEPLANNER", "CONTROL_PLANE"]
+      }],
+      "default": null,
+      "doc": "Engine that produced this event (if applicable)"
+    },
+    {
+      "name": "plan_type",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Type of plan for plan-related events"
+    },
+    {
+      "name": "spec_type",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Type of spec for spec-related events"
+    },
+    {
+      "name": "artifact_type",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Type of artifact for artifact-related events"
+    },
+    {
+      "name": "proof_type",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Type of proof for proof-related events"
+    },
+    {
+      "name": "deployment_environment",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Deployment environment for deployment events"
+    },
+    {
+      "name": "related_object_ids",
+      "type": ["null", {"type": "array", "items": "string"}],
+      "default": null,
+      "doc": "IDs of related objects (e.g., input specs for a plan)"
+    },
+    {
+      "name": "error_message",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Error message for failure events"
+    },
+    {
+      "name": "error_code",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Error code for failure events"
+    },
+    {
+      "name": "governance_violation_type",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Type of governance violation (if applicable)"
+    },
+    {
+      "name": "idempotency_key",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Idempotency key for deduplication (SHA-256 of object_id + timestamp + event_type)"
+    },
+    {
+      "name": "correlation_id",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Correlation ID for distributed tracing"
+    },
+    {
+      "name": "source_service",
+      "type": {
+        "type": "string",
+        "default": "plato-service"
+      },
+      "default": "plato-service",
+      "doc": "Service that produced this event"
+    },
+    {
+      "name": "metadata",
+      "type": ["null", {"type": "map", "values": "string"}],
+      "default": null,
+      "doc": "Additional event metadata as key-value pairs"
+    }
+  ]
+}
