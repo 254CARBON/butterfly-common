@@ -5,6 +5,8 @@
 ![Java](https://img.shields.io/badge/Java-17-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
+> 📚 **Part of the BUTTERFLY Ecosystem** — See [Ecosystem Documentation](../docs/index.md) | [butterfly-common Summary](../docs/services/butterfly-common.md)
+
 > **Maturity**: Stable | **Status**: Production-ready shared contracts
 
 Shared domain models, identity primitives, and event contracts for the BUTTERFLY ecosystem (CAPSULE, PERCEPTION, ODYSSEY).
