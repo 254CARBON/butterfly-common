@@ -3,3 +3,5 @@ com.z254.butterfly.common.tenant.TenantServletAutoConfiguration
 com.z254.butterfly.common.resilience.ResilienceAutoConfiguration
 com.z254.butterfly.common.telemetry.TelemetryAutoConfiguration
 com.z254.butterfly.common.tracing.TracingAutoConfiguration
+com.z254.butterfly.common.client.ServiceClientAutoConfiguration
+com.z254.butterfly.common.health.EcosystemHealthAutoConfiguration
