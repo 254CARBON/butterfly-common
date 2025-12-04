@@ -1,0 +1,295 @@
+{
+  "namespace": "com.z254.butterfly.common.capsule.avro",
+  "type": "record",
+  "name": "CapsuleDetectionEvent",
+  "doc": "High-value detection output from CAPSULE's ML/detection services. Published to capsule.detections topic for consumption by ODYSSEY and PLATO.",
+  "fields": [
+    {
+      "name": "detection_id",
+      "type": "string",
+      "doc": "Globally unique detection identifier (UUID)"
+    },
+    {
+      "name": "correlation_id",
+      "type": "string",
+      "doc": "Correlation ID for distributed tracing"
+    },
+    {
+      "name": "capsule_id",
+      "type": "string",
+      "doc": "ID of the CAPSULE that triggered the detection"
+    },
+    {
+      "name": "scope_id",
+      "type": "string",
+      "doc": "RIM Node Identifier (rim:{nodeType}:{namespace}:{localId})"
+    },
+    {
+      "name": "timestamp",
+      "type": "long",
+      "logicalType": "timestamp-millis",
+      "doc": "Detection timestamp in milliseconds since epoch"
+    },
+    {
+      "name": "resolution",
+      "type": "int",
+      "default": 60,
+      "doc": "Time resolution in seconds for temporal alignment"
+    },
+    {
+      "name": "detection_type",
+      "type": {
+        "type": "enum",
+        "name": "DetectionType",
+        "symbols": ["PATTERN", "ANOMALY"],
+        "doc": "Whether this is a pattern or anomaly detection"
+      },
+      "doc": "Type of detection"
+    },
+    {
+      "name": "pattern_type",
+      "type": ["null", {
+        "type": "enum",
+        "name": "PatternType",
+        "symbols": [
+          "SEQUENCE",
+          "CYCLE",
+          "TREND",
+          "REGIME_SHIFT",
+          "CORRELATION",
+          "SEASONALITY"
+        ],
+        "doc": "CAPSULE pattern types"
+      }],
+      "default": null,
+      "doc": "Pattern type if detection_type is PATTERN"
+    },
+    {
+      "name": "anomaly_type",
+      "type": ["null", {
+        "type": "enum",
+        "name": "AnomalyType",
+        "symbols": [
+          "POINT",
+          "CONTEXTUAL",
+          "COLLECTIVE",
+          "STRUCTURAL",
+          "TEMPORAL",
+          "DATA_QUALITY",
+          "CONFIDENCE",
+          "DYNAMICS"
+        ],
+        "doc": "CAPSULE anomaly types"
+      }],
+      "default": null,
+      "doc": "Anomaly type if detection_type is ANOMALY"
+    },
+    {
+      "name": "severity",
+      "type": {
+        "type": "enum",
+        "name": "Severity",
+        "symbols": ["INFO", "LOW", "MEDIUM", "HIGH", "CRITICAL"],
+        "doc": "Severity level of the detection"
+      },
+      "doc": "Severity level of the detection"
+    },
+    {
+      "name": "confidence",
+      "type": "double",
+      "doc": "Detection confidence score (0.0 to 1.0)"
+    },
+    {
+      "name": "deviation_score",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "Deviation score for anomaly detections"
+    },
+    {
+      "name": "pattern_details",
+      "type": ["null", {
+        "type": "record",
+        "name": "PatternDetails",
+        "doc": "Detailed pattern detection information",
+        "fields": [
+          {
+            "name": "pattern_id",
+            "type": "string",
+            "doc": "Unique pattern identifier"
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "doc": "Human-readable pattern description"
+          },
+          {
+            "name": "occurrences",
+            "type": "int",
+            "doc": "Number of pattern occurrences"
+          },
+          {
+            "name": "period_seconds",
+            "type": ["null", "long"],
+            "default": null,
+            "doc": "Period for cyclic patterns in seconds"
+          },
+          {
+            "name": "trend_direction",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "Trend direction (UP, DOWN) for trend patterns"
+          },
+          {
+            "name": "correlation_coefficient",
+            "type": ["null", "double"],
+            "default": null,
+            "doc": "Correlation coefficient for correlation patterns"
+          },
+          {
+            "name": "affected_fields",
+            "type": {
+              "type": "array",
+              "items": "string"
+            },
+            "default": [],
+            "doc": "CAPSULE fields affected by the pattern"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Pattern details if detection_type is PATTERN"
+    },
+    {
+      "name": "anomaly_details",
+      "type": ["null", {
+        "type": "record",
+        "name": "AnomalyDetails",
+        "doc": "Detailed anomaly detection information",
+        "fields": [
+          {
+            "name": "anomaly_id",
+            "type": "string",
+            "doc": "Unique anomaly identifier"
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "doc": "Human-readable anomaly description"
+          },
+          {
+            "name": "z_score",
+            "type": ["null", "double"],
+            "default": null,
+            "doc": "Z-score for statistical anomalies"
+          },
+          {
+            "name": "expected_value",
+            "type": ["null", "double"],
+            "default": null,
+            "doc": "Expected value"
+          },
+          {
+            "name": "actual_value",
+            "type": ["null", "double"],
+            "default": null,
+            "doc": "Actual observed value"
+          },
+          {
+            "name": "affected_fields",
+            "type": {
+              "type": "array",
+              "items": "string"
+            },
+            "default": [],
+            "doc": "CAPSULE fields affected by the anomaly"
+          },
+          {
+            "name": "context_window_start",
+            "type": ["null", "long"],
+            "default": null,
+            "logicalType": "timestamp-millis",
+            "doc": "Context window start for contextual anomalies"
+          },
+          {
+            "name": "context_window_end",
+            "type": ["null", "long"],
+            "default": null,
+            "logicalType": "timestamp-millis",
+            "doc": "Context window end for contextual anomalies"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Anomaly details if detection_type is ANOMALY"
+    },
+    {
+      "name": "source_perception_event_id",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "ID of the originating PERCEPTION event if applicable"
+    },
+    {
+      "name": "model_info",
+      "type": {
+        "type": "record",
+        "name": "ModelInfo",
+        "doc": "Information about the ML model used for detection",
+        "fields": [
+          {
+            "name": "model_id",
+            "type": "string",
+            "doc": "Model identifier"
+          },
+          {
+            "name": "model_version",
+            "type": "string",
+            "doc": "Model version"
+          },
+          {
+            "name": "model_type",
+            "type": "string",
+            "doc": "Type of model (e.g., pattern_detector, anomaly_detector)"
+          }
+        ]
+      },
+      "doc": "ML model information"
+    },
+    {
+      "name": "affected_entities",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "default": [],
+      "doc": "List of affected RIM Node IDs"
+    },
+    {
+      "name": "recommended_actions",
+      "type": ["null", {
+        "type": "array",
+        "items": "string"
+      }],
+      "default": null,
+      "doc": "Optional recommended actions for ODYSSEY/PLATO"
+    },
+    {
+      "name": "metadata",
+      "type": ["null", {"type": "map", "values": "string"}],
+      "default": null,
+      "doc": "Additional metadata key-value pairs"
+    },
+    {
+      "name": "source_service",
+      "type": "string",
+      "default": "capsule",
+      "doc": "Service instance that produced this event"
+    },
+    {
+      "name": "schema_version",
+      "type": "string",
+      "default": "1.0.0",
+      "doc": "Schema version for backward compatibility"
+    }
+  ]
+}
+

@@ -1,0 +1,297 @@
+{
+  "namespace": "com.z254.butterfly.common.perception.avro",
+  "type": "record",
+  "name": "PerceptionToCapsuleEvent",
+  "doc": "Unified event envelope for PERCEPTION to CAPSULE ingestion. Aligns with CAPSULE temporal query capabilities (scopeId, timestamp, resolution, vantageMode).",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": "string",
+      "doc": "Globally unique event identifier (UUID)"
+    },
+    {
+      "name": "correlation_id",
+      "type": "string",
+      "doc": "Correlation ID for distributed tracing"
+    },
+    {
+      "name": "causation_id",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "ID of the event that caused this event"
+    },
+    {
+      "name": "scope_id",
+      "type": "string",
+      "doc": "RIM Node Identifier for CAPSULE scoping (rim:{nodeType}:{namespace}:{localId})"
+    },
+    {
+      "name": "timestamp",
+      "type": "long",
+      "logicalType": "timestamp-millis",
+      "doc": "Event timestamp in milliseconds since epoch for CAPSULE temporal queries"
+    },
+    {
+      "name": "resolution",
+      "type": "int",
+      "default": 60,
+      "doc": "Time resolution in seconds for CAPSULE snapshot alignment"
+    },
+    {
+      "name": "vantage_mode",
+      "type": {
+        "type": "enum",
+        "name": "VantageMode",
+        "symbols": ["OMNISCIENT", "OBSERVER_SPECIFIC", "SYSTEM_SPECIFIC"],
+        "doc": "CAPSULE vantage mode for perspective-based querying"
+      },
+      "default": "OMNISCIENT",
+      "doc": "Vantage mode for CAPSULE perspective alignment"
+    },
+    {
+      "name": "event_type",
+      "type": {
+        "type": "enum",
+        "name": "PerceptionEventType",
+        "symbols": [
+          "SIGNAL_DETECTED",
+          "PATTERN_DETECTED",
+          "ANOMALY_DETECTED",
+          "THRESHOLD_ALERT",
+          "CLUSTER_UPDATE",
+          "TREND_CHANGE",
+          "INTEGRITY_UPDATE",
+          "TRUST_SCORE_CHANGE"
+        ],
+        "doc": "Type of PERCEPTION event"
+      },
+      "doc": "Type of PERCEPTION event for CAPSULE categorization"
+    },
+    {
+      "name": "detection_result",
+      "type": ["null", "com.z254.butterfly.common.perception.avro.PerceptionDetectionResult"],
+      "default": null,
+      "doc": "Full detection result if this event wraps a detection"
+    },
+    {
+      "name": "signal_event",
+      "type": ["null", "com.z254.butterfly.common.perception.avro.PerceptionSignalEvent"],
+      "default": null,
+      "doc": "Signal event data if this wraps a signal detection"
+    },
+    {
+      "name": "capsule_configuration_snapshot",
+      "type": ["null", {
+        "type": "record",
+        "name": "ConfigurationSnapshot",
+        "doc": "Snapshot of configuration state for CAPSULE C (Configuration) field",
+        "fields": [
+          {
+            "name": "entity_count",
+            "type": "int",
+            "default": 0,
+            "doc": "Number of entities in scope"
+          },
+          {
+            "name": "relation_count",
+            "type": "int",
+            "default": 0,
+            "doc": "Number of relations in scope"
+          },
+          {
+            "name": "field_values",
+            "type": {
+              "type": "map",
+              "values": "string"
+            },
+            "default": {},
+            "doc": "Key field values snapshot"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Configuration snapshot for CAPSULE C field"
+    },
+    {
+      "name": "capsule_dynamics_snapshot",
+      "type": ["null", {
+        "type": "record",
+        "name": "DynamicsSnapshot",
+        "doc": "Snapshot of dynamics state for CAPSULE D (Dynamics) field",
+        "fields": [
+          {
+            "name": "stability_score",
+            "type": "double",
+            "default": 0.0,
+            "doc": "Current stability score (0.0 to 1.0)"
+          },
+          {
+            "name": "volatility",
+            "type": "double",
+            "default": 0.0,
+            "doc": "Current volatility level (0.0 to 1.0)"
+          },
+          {
+            "name": "trend_direction",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "Trend direction if detected (UP, DOWN, STABLE)"
+          },
+          {
+            "name": "rate_of_change",
+            "type": ["null", "double"],
+            "default": null,
+            "doc": "Rate of change if applicable"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Dynamics snapshot for CAPSULE D field"
+    },
+    {
+      "name": "capsule_meta_snapshot",
+      "type": ["null", {
+        "type": "record",
+        "name": "MetaSnapshot",
+        "doc": "Snapshot of meta state for CAPSULE M (Meta) field",
+        "fields": [
+          {
+            "name": "overall_confidence",
+            "type": "double",
+            "default": 0.5,
+            "doc": "Overall confidence score (0.0 to 1.0)"
+          },
+          {
+            "name": "data_quality_score",
+            "type": "double",
+            "default": 0.5,
+            "doc": "Data quality score (0.0 to 1.0)"
+          },
+          {
+            "name": "coverage_score",
+            "type": "double",
+            "default": 0.5,
+            "doc": "Coverage completeness score (0.0 to 1.0)"
+          },
+          {
+            "name": "source_count",
+            "type": "int",
+            "default": 0,
+            "doc": "Number of contributing sources"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Meta snapshot for CAPSULE M field"
+    },
+    {
+      "name": "trust_score",
+      "type": "double",
+      "default": 0.5,
+      "doc": "Trust score from PERCEPTION integrity module (0.0 to 1.0)"
+    },
+    {
+      "name": "impact_estimate",
+      "type": ["null", {
+        "type": "record",
+        "name": "ImpactEstimate",
+        "doc": "Estimated impact of the event",
+        "fields": [
+          {
+            "name": "magnitude",
+            "type": "double",
+            "doc": "Impact magnitude (0.0 to 1.0)"
+          },
+          {
+            "name": "direction",
+            "type": "string",
+            "default": "NEUTRAL",
+            "doc": "Impact direction (POSITIVE, NEGATIVE, NEUTRAL)"
+          },
+          {
+            "name": "confidence",
+            "type": "double",
+            "doc": "Confidence in the impact estimate (0.0 to 1.0)"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Estimated impact for ODYSSEY/PLATO consumption"
+    },
+    {
+      "name": "affected_entities",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "default": [],
+      "doc": "List of affected RIM Node IDs for cross-entity correlation"
+    },
+    {
+      "name": "sources",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "default": [],
+      "doc": "List of source identifiers contributing to this event"
+    },
+    {
+      "name": "tags",
+      "type": ["null", {"type": "map", "values": "string"}],
+      "default": null,
+      "doc": "Optional tags for filtering and categorization"
+    },
+    {
+      "name": "metadata",
+      "type": ["null", {"type": "map", "values": "string"}],
+      "default": null,
+      "doc": "Additional metadata key-value pairs"
+    },
+    {
+      "name": "lineage",
+      "type": {
+        "type": "record",
+        "name": "EventLineage",
+        "doc": "Event lineage and provenance",
+        "fields": [
+          {
+            "name": "upstream_event_ids",
+            "type": {
+              "type": "array",
+              "items": "string"
+            },
+            "default": [],
+            "doc": "IDs of upstream events that contributed to this event"
+          },
+          {
+            "name": "detector_version",
+            "type": "string",
+            "default": "1.0.0",
+            "doc": "Version of the detector that produced this event"
+          },
+          {
+            "name": "pipeline_id",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "ID of the processing pipeline"
+          }
+        ]
+      },
+      "doc": "Event lineage and provenance information"
+    },
+    {
+      "name": "source_service",
+      "type": "string",
+      "default": "perception",
+      "doc": "Service instance that produced this event"
+    },
+    {
+      "name": "schema_version",
+      "type": "string",
+      "default": "1.0.0",
+      "doc": "Schema version for backward compatibility"
+    }
+  ]
+}
+

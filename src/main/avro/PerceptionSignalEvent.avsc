@@ -1,0 +1,226 @@
+{
+  "namespace": "com.z254.butterfly.common.perception.avro",
+  "type": "record",
+  "name": "PerceptionSignalEvent",
+  "doc": "PERCEPTION signal detector output event. Wraps outputs from volatility, event horizon, emergent pattern, and co-occurrence detectors for downstream processing by CAPSULE and other services.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": "string",
+      "doc": "Globally unique event identifier (UUID)"
+    },
+    {
+      "name": "correlation_id",
+      "type": "string",
+      "doc": "Correlation ID for distributed tracing"
+    },
+    {
+      "name": "rim_node_id",
+      "type": "string",
+      "doc": "Canonical RIM Node Identifier (rim:{nodeType}:{namespace}:{localId})"
+    },
+    {
+      "name": "timestamp",
+      "type": "long",
+      "logicalType": "timestamp-millis",
+      "doc": "Event timestamp in milliseconds since epoch"
+    },
+    {
+      "name": "detector_type",
+      "type": {
+        "type": "enum",
+        "name": "DetectorType",
+        "symbols": [
+          "VOLATILITY",
+          "EVENT_HORIZON",
+          "EMERGENT_PATTERN",
+          "CO_OCCURRENCE",
+          "MISSING_SIGNAL",
+          "INGESTION_TELEMETRY",
+          "OPEN_MIC"
+        ],
+        "doc": "Type of PERCEPTION detector that produced this signal"
+      },
+      "doc": "Type of detector that produced this signal"
+    },
+    {
+      "name": "signal_type",
+      "type": {
+        "type": "enum",
+        "name": "SignalType",
+        "symbols": [
+          "WEAK_SIGNAL",
+          "STRONG_SIGNAL",
+          "PATTERN_DETECTED",
+          "ANOMALY_DETECTED",
+          "THRESHOLD_CROSSED",
+          "CLUSTER_FORMED",
+          "TREND_IDENTIFIED"
+        ],
+        "doc": "Classification of the detected signal"
+      },
+      "doc": "Classification of the detected signal"
+    },
+    {
+      "name": "severity",
+      "type": {
+        "type": "enum",
+        "name": "Severity",
+        "symbols": ["INFO", "LOW", "MEDIUM", "HIGH", "CRITICAL"],
+        "doc": "Severity level of the detection"
+      },
+      "doc": "Severity level of the detection"
+    },
+    {
+      "name": "confidence",
+      "type": "double",
+      "doc": "Confidence score (0.0 to 1.0)"
+    },
+    {
+      "name": "signal_strength",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "Optional signal strength indicator (0.0 to 1.0)"
+    },
+    {
+      "name": "volatility_score",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "Volatility score if applicable (0.0 to 1.0)"
+    },
+    {
+      "name": "event_horizon",
+      "type": ["null", {
+        "type": "record",
+        "name": "EventHorizonData",
+        "doc": "Event horizon detection data",
+        "fields": [
+          {
+            "name": "horizon_timestamp",
+            "type": "long",
+            "logicalType": "timestamp-millis",
+            "doc": "Predicted event horizon timestamp"
+          },
+          {
+            "name": "probability",
+            "type": "double",
+            "doc": "Probability of the event occurring"
+          },
+          {
+            "name": "impact_estimate",
+            "type": ["null", "double"],
+            "default": null,
+            "doc": "Estimated impact magnitude"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Event horizon data if applicable"
+    },
+    {
+      "name": "pattern_data",
+      "type": ["null", {
+        "type": "record",
+        "name": "PatternData",
+        "doc": "Emergent pattern data",
+        "fields": [
+          {
+            "name": "pattern_id",
+            "type": "string",
+            "doc": "Unique identifier for the detected pattern"
+          },
+          {
+            "name": "pattern_type",
+            "type": "string",
+            "doc": "Type of pattern (e.g., trend, cycle, sequence)"
+          },
+          {
+            "name": "occurrences",
+            "type": "int",
+            "doc": "Number of pattern occurrences"
+          },
+          {
+            "name": "start_time",
+            "type": "long",
+            "logicalType": "timestamp-millis",
+            "doc": "Pattern start timestamp"
+          },
+          {
+            "name": "end_time",
+            "type": ["null", "long"],
+            "default": null,
+            "logicalType": "timestamp-millis",
+            "doc": "Pattern end timestamp if known"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Pattern data if applicable"
+    },
+    {
+      "name": "co_occurrence_data",
+      "type": ["null", {
+        "type": "record",
+        "name": "CoOccurrenceData",
+        "doc": "Co-occurrence detection data",
+        "fields": [
+          {
+            "name": "related_node_ids",
+            "type": {
+              "type": "array",
+              "items": "string"
+            },
+            "doc": "Related RIM Node IDs in the co-occurrence"
+          },
+          {
+            "name": "correlation_coefficient",
+            "type": "double",
+            "doc": "Correlation coefficient between nodes"
+          },
+          {
+            "name": "time_lag_ms",
+            "type": ["null", "long"],
+            "default": null,
+            "doc": "Time lag between co-occurring events in milliseconds"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Co-occurrence data if applicable"
+    },
+    {
+      "name": "affected_entities",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "default": [],
+      "doc": "List of affected RIM Node IDs"
+    },
+    {
+      "name": "trust_score",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "Trust score of the source data (0.0 to 1.0)"
+    },
+    {
+      "name": "metadata",
+      "type": ["null", {"type": "map", "values": "string"}],
+      "default": null,
+      "doc": "Additional metadata key-value pairs"
+    },
+    {
+      "name": "source_service",
+      "type": "string",
+      "default": "perception-signals",
+      "doc": "Service instance that produced this event"
+    },
+    {
+      "name": "schema_version",
+      "type": "string",
+      "default": "1.0.0",
+      "doc": "Schema version for backward compatibility"
+    }
+  ]
+}
+

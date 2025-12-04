@@ -1,0 +1,197 @@
+{
+  "namespace": "com.z254.butterfly.common.perception.avro",
+  "type": "record",
+  "name": "PerceptionDetectionResult",
+  "doc": "Standardized detection result envelope with severity, confidence, and temporal context. Used for aggregating detection results from multiple PERCEPTION detectors.",
+  "fields": [
+    {
+      "name": "result_id",
+      "type": "string",
+      "doc": "Unique identifier for this detection result (UUID)"
+    },
+    {
+      "name": "correlation_id",
+      "type": "string",
+      "doc": "Correlation ID for distributed tracing"
+    },
+    {
+      "name": "detection_timestamp",
+      "type": "long",
+      "logicalType": "timestamp-millis",
+      "doc": "Timestamp when detection was performed"
+    },
+    {
+      "name": "event_timestamp",
+      "type": "long",
+      "logicalType": "timestamp-millis",
+      "doc": "Timestamp of the detected event/pattern"
+    },
+    {
+      "name": "rim_node_id",
+      "type": "string",
+      "doc": "Primary RIM Node Identifier for the detection"
+    },
+    {
+      "name": "detector_type",
+      "type": "com.z254.butterfly.common.perception.avro.DetectorType",
+      "doc": "Type of detector that produced this result"
+    },
+    {
+      "name": "detection_category",
+      "type": {
+        "type": "enum",
+        "name": "DetectionCategory",
+        "symbols": ["PATTERN", "ANOMALY", "SIGNAL", "ALERT"],
+        "doc": "High-level category of the detection"
+      },
+      "doc": "High-level category of the detection"
+    },
+    {
+      "name": "severity",
+      "type": "com.z254.butterfly.common.perception.avro.Severity",
+      "doc": "Severity level of the detection"
+    },
+    {
+      "name": "confidence",
+      "type": "double",
+      "doc": "Confidence score (0.0 to 1.0)"
+    },
+    {
+      "name": "temporal_context",
+      "type": {
+        "type": "record",
+        "name": "TemporalContext",
+        "doc": "Temporal context for the detection",
+        "fields": [
+          {
+            "name": "window_start",
+            "type": "long",
+            "logicalType": "timestamp-millis",
+            "doc": "Start of the analysis window"
+          },
+          {
+            "name": "window_end",
+            "type": "long",
+            "logicalType": "timestamp-millis",
+            "doc": "End of the analysis window"
+          },
+          {
+            "name": "resolution_seconds",
+            "type": "int",
+            "default": 60,
+            "doc": "Resolution of the analysis in seconds"
+          },
+          {
+            "name": "data_points_analyzed",
+            "type": "int",
+            "default": 0,
+            "doc": "Number of data points analyzed"
+          }
+        ]
+      },
+      "doc": "Temporal context for the detection"
+    },
+    {
+      "name": "capsule_pattern_type",
+      "type": ["null", {
+        "type": "enum",
+        "name": "CapsulePatternType",
+        "symbols": [
+          "SEQUENCE",
+          "CYCLE",
+          "TREND",
+          "REGIME_SHIFT",
+          "CORRELATION",
+          "SEASONALITY"
+        ],
+        "doc": "Mapped CAPSULE pattern type for pattern detections"
+      }],
+      "default": null,
+      "doc": "Mapped CAPSULE pattern type if detection is a pattern"
+    },
+    {
+      "name": "capsule_anomaly_type",
+      "type": ["null", {
+        "type": "enum",
+        "name": "CapsuleAnomalyType",
+        "symbols": [
+          "POINT",
+          "CONTEXTUAL",
+          "COLLECTIVE",
+          "STRUCTURAL",
+          "TEMPORAL",
+          "DATA_QUALITY",
+          "CONFIDENCE",
+          "DYNAMICS"
+        ],
+        "doc": "Mapped CAPSULE anomaly type for anomaly detections"
+      }],
+      "default": null,
+      "doc": "Mapped CAPSULE anomaly type if detection is an anomaly"
+    },
+    {
+      "name": "detection_details",
+      "type": {
+        "type": "map",
+        "values": "string"
+      },
+      "default": {},
+      "doc": "Detailed detection information as key-value pairs"
+    },
+    {
+      "name": "metrics",
+      "type": {
+        "type": "map",
+        "values": "double"
+      },
+      "default": {},
+      "doc": "Numeric metrics from the detection (e.g., deviation_score, z_score)"
+    },
+    {
+      "name": "affected_entities",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "default": [],
+      "doc": "List of affected RIM Node IDs"
+    },
+    {
+      "name": "source_events",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "default": [],
+      "doc": "List of source event IDs that contributed to this detection"
+    },
+    {
+      "name": "recommended_actions",
+      "type": ["null", {
+        "type": "array",
+        "items": "string"
+      }],
+      "default": null,
+      "doc": "Optional recommended actions based on the detection"
+    },
+    {
+      "name": "trust_score",
+      "type": "double",
+      "default": 0.5,
+      "doc": "Trust score of the underlying data (0.0 to 1.0)"
+    },
+    {
+      "name": "source_service",
+      "type": "string",
+      "default": "perception",
+      "doc": "Service instance that produced this result"
+    },
+    {
+      "name": "schema_version",
+      "type": "string",
+      "default": "1.0.0",
+      "doc": "Schema version for backward compatibility"
+    }
+  ]
+}
+
