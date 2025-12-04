@@ -1,0 +1,66 @@
+{
+  "namespace": "com.z254.butterfly.common.learning.avro",
+  "type": "record",
+  "name": "LearningOutcome",
+  "doc": "Result of applying a learning signal. Part of Phase 6 Global Learning Loops.",
+  "fields": [
+    {
+      "name": "outcomeId",
+      "type": "string",
+      "doc": "Unique identifier for this outcome"
+    },
+    {
+      "name": "signalId",
+      "type": "string",
+      "doc": "The learning signal that was applied"
+    },
+    {
+      "name": "sourceSystem",
+      "type": "com.z254.butterfly.common.learning.avro.SystemId",
+      "doc": "System that generated the original signal"
+    },
+    {
+      "name": "targetSystem",
+      "type": "com.z254.butterfly.common.learning.avro.SystemId",
+      "doc": "System that processed the signal"
+    },
+    {
+      "name": "signalType",
+      "type": "com.z254.butterfly.common.learning.avro.SignalType",
+      "doc": "Type of the applied signal"
+    },
+    {
+      "name": "success",
+      "type": "boolean",
+      "doc": "Whether the signal was successfully applied"
+    },
+    {
+      "name": "effectivenessScore",
+      "type": "double",
+      "doc": "Measure of how effective the learning was (0.0 to 1.0)"
+    },
+    {
+      "name": "appliedAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "When the signal was applied"
+    },
+    {
+      "name": "details",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Human-readable description of the outcome"
+    },
+    {
+      "name": "changes",
+      "type": {
+        "type": "map",
+        "values": "string"
+      },
+      "doc": "Changes made as a result of the learning"
+    }
+  ]
+}
+

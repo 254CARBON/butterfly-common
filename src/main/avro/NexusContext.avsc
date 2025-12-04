@@ -1,0 +1,40 @@
+{
+  "namespace": "com.z254.butterfly.common.nexus.avro",
+  "type": "record",
+  "name": "NexusContext",
+  "doc": "NEXUS-specific context for cross-module correlation. Used by all NEXUS event schemas to maintain correlation across temporal queries, inference chains, synthesis sessions, and learning epochs.",
+  "fields": [
+    {
+      "name": "temporal_correlation_id",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "ID linking events across temporal queries"
+    },
+    {
+      "name": "inference_chain_id",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "ID linking events in an inference chain"
+    },
+    {
+      "name": "synthesis_session_id",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "ID linking events in a synthesis session"
+    },
+    {
+      "name": "learning_epoch_id",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "ID linking events in a learning epoch"
+    },
+    {
+      "name": "cascade_id",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "ID linking events in a scenario cascade"
+    }
+  ]
+}
+
+

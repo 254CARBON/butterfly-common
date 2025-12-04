@@ -1,0 +1,87 @@
+{
+  "namespace": "com.z254.butterfly.common.learning.avro",
+  "type": "record",
+  "name": "LearningSignal",
+  "doc": "A learning signal from one BUTTERFLY system that can improve another. Part of Phase 6 Global Learning Loops.",
+  "fields": [
+    {
+      "name": "signalId",
+      "type": "string",
+      "doc": "Unique identifier for this learning signal"
+    },
+    {
+      "name": "sourceSystem",
+      "type": {
+        "type": "enum",
+        "name": "SystemId",
+        "symbols": ["CAPSULE", "ODYSSEY", "PLATO", "PERCEPTION", "NEXUS", "SYNAPSE"]
+      },
+      "doc": "System that generated the signal"
+    },
+    {
+      "name": "targetSystem",
+      "type": "SystemId",
+      "doc": "System that should learn from the signal"
+    },
+    {
+      "name": "signalType",
+      "type": {
+        "type": "enum",
+        "name": "SignalType",
+        "symbols": [
+          "DECISION_OUTCOME",
+          "REALIZED_FUTURE",
+          "VALIDATION_RESULT",
+          "SCENARIO_OUTCOME",
+          "ACTION_OUTCOME",
+          "ACTION_OBSERVATION",
+          "ACTION_HISTORY",
+          "PERFORMANCE_FEEDBACK",
+          "SCHEMA_FEEDBACK",
+          "CONFIDENCE_CALIBRATION"
+        ]
+      },
+      "doc": "Type of learning signal"
+    },
+    {
+      "name": "confidence",
+      "type": "double",
+      "doc": "Confidence in this signal (0.0 to 1.0)"
+    },
+    {
+      "name": "timestamp",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "When the signal was generated"
+    },
+    {
+      "name": "applied",
+      "type": "boolean",
+      "default": false,
+      "doc": "Whether the signal has been applied"
+    },
+    {
+      "name": "payload",
+      "type": {
+        "type": "map",
+        "values": "string"
+      },
+      "doc": "Signal-specific payload data"
+    },
+    {
+      "name": "correlationId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Optional correlation ID for tracing"
+    },
+    {
+      "name": "tenantId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Optional tenant identifier for multi-tenant deployments"
+    }
+  ]
+}
+

@@ -1,0 +1,302 @@
+{
+  "namespace": "com.z254.butterfly.common.nexus.avro",
+  "type": "record",
+  "name": "NexusSynthesisEvent",
+  "doc": "Event schema for NEXUS predictive synthesis events. Published when strategic options are generated, scored, or selected.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": "string",
+      "doc": "Globally unique event identifier (UUID)"
+    },
+    {
+      "name": "event_type",
+      "type": {
+        "type": "enum",
+        "name": "NexusSynthesisEventType",
+        "symbols": [
+          "SYNTHESIS_STARTED",
+          "OPTIONS_GENERATED",
+          "OPTION_SCORED",
+          "OPTION_SELECTED",
+          "SCENARIO_CASCADE_STARTED",
+          "SCENARIO_CASCADE_COMPLETED",
+          "IGNORANCE_MAP_UPDATED",
+          "BLIND_SPOT_DETECTED",
+          "SYNTHESIS_FAILED"
+        ]
+      },
+      "doc": "Type of NEXUS synthesis event"
+    },
+    {
+      "name": "timestamp",
+      "type": "long",
+      "doc": "Event timestamp in milliseconds since epoch"
+    },
+    {
+      "name": "correlation_id",
+      "type": "string",
+      "doc": "Correlation ID for distributed tracing"
+    },
+    {
+      "name": "synthesis_session_id",
+      "type": "string",
+      "doc": "Unique session ID for this synthesis run"
+    },
+    {
+      "name": "scope_id",
+      "type": "string",
+      "doc": "Scope for synthesis (rim:{nodeType}:{namespace}:{localId})"
+    },
+    {
+      "name": "trigger",
+      "type": {
+        "type": "enum",
+        "name": "SynthesisTrigger",
+        "symbols": ["SCHEDULED", "EVENT_DRIVEN", "USER_REQUESTED", "ANOMALY_TRIGGERED", "THRESHOLD_BREACH"]
+      },
+      "doc": "What triggered this synthesis"
+    },
+    {
+      "name": "options_summary",
+      "type": ["null", {
+        "type": "record",
+        "name": "OptionsSummary",
+        "fields": [
+          {
+            "name": "total_options",
+            "type": "int",
+            "doc": "Total number of options generated"
+          },
+          {
+            "name": "top_option_id",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "ID of the highest-scored option"
+          },
+          {
+            "name": "top_option_confidence",
+            "type": ["null", "double"],
+            "default": null,
+            "doc": "Confidence of the top option"
+          },
+          {
+            "name": "confidence_spread",
+            "type": "double",
+            "doc": "Spread between highest and lowest confidence"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Summary of generated options"
+    },
+    {
+      "name": "strategic_option",
+      "type": ["null", {
+        "type": "record",
+        "name": "StrategicOptionRecord",
+        "fields": [
+          {
+            "name": "option_id",
+            "type": "string",
+            "doc": "Unique option identifier"
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "doc": "Human-readable description"
+          },
+          {
+            "name": "affected_entities",
+            "type": {"type": "array", "items": "string"},
+            "doc": "RIM node IDs affected by this option"
+          },
+          {
+            "name": "perception_confidence",
+            "type": "double",
+            "doc": "Confidence from PERCEPTION scenarios"
+          },
+          {
+            "name": "odyssey_confidence",
+            "type": "double",
+            "doc": "Confidence from ODYSSEY paths"
+          },
+          {
+            "name": "capsule_confidence",
+            "type": "double",
+            "doc": "Confidence from CAPSULE precedents"
+          },
+          {
+            "name": "overall_confidence",
+            "type": "double",
+            "doc": "Synthesized overall confidence"
+          },
+          {
+            "name": "risk_score",
+            "type": "double",
+            "doc": "Aggregated risk score (0.0-1.0)"
+          },
+          {
+            "name": "reversibility_seconds",
+            "type": ["null", "long"],
+            "default": null,
+            "doc": "Time window for reversal in seconds"
+          },
+          {
+            "name": "supporting_scenarios",
+            "type": "int",
+            "doc": "Number of supporting PERCEPTION scenarios"
+          },
+          {
+            "name": "aligned_paths",
+            "type": "int",
+            "doc": "Number of aligned ODYSSEY paths"
+          },
+          {
+            "name": "historical_precedents",
+            "type": "int",
+            "doc": "Number of CAPSULE historical precedents"
+          },
+          {
+            "name": "governance_status",
+            "type": {
+              "type": "enum",
+              "name": "GovernanceStatus",
+              "symbols": ["NOT_EVALUATED", "COMPLIANT", "NON_COMPLIANT", "REQUIRES_REVIEW"]
+            },
+            "doc": "PLATO governance evaluation status"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Details of a strategic option"
+    },
+    {
+      "name": "ignorance_map",
+      "type": ["null", {
+        "type": "record",
+        "name": "IgnoranceMapRecord",
+        "fields": [
+          {
+            "name": "overall_ignorance",
+            "type": "double",
+            "doc": "Overall ignorance level (0.0-1.0)"
+          },
+          {
+            "name": "blind_spot_count",
+            "type": "int",
+            "doc": "Number of critical blind spots"
+          },
+          {
+            "name": "critical_blind_spots",
+            "type": {"type": "array", "items": "string"},
+            "doc": "Node IDs with critical blind spots"
+          },
+          {
+            "name": "perception_coverage",
+            "type": "double",
+            "doc": "PERCEPTION visibility coverage"
+          },
+          {
+            "name": "odyssey_coverage",
+            "type": "double",
+            "doc": "ODYSSEY projection coverage"
+          },
+          {
+            "name": "capsule_coverage",
+            "type": "double",
+            "doc": "CAPSULE historical coverage"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Cross-system ignorance analysis"
+    },
+    {
+      "name": "cascade",
+      "type": ["null", {
+        "type": "record",
+        "name": "ScenarioCascade",
+        "fields": [
+          {
+            "name": "source_scenario_id",
+            "type": "string",
+            "doc": "ID of the originating PERCEPTION scenario"
+          },
+          {
+            "name": "odyssey_evaluations",
+            "type": "int",
+            "doc": "Number of ODYSSEY path evaluations"
+          },
+          {
+            "name": "capsule_validations",
+            "type": "int",
+            "doc": "Number of CAPSULE counterfactual validations"
+          },
+          {
+            "name": "cascade_latency_ms",
+            "type": "long",
+            "doc": "Total cascade processing time"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Scenario cascade details"
+    },
+    {
+      "name": "processing_metrics",
+      "type": ["null", {
+        "type": "record",
+        "name": "SynthesisMetrics",
+        "fields": [
+          {
+            "name": "latency_ms",
+            "type": "long",
+            "doc": "Total synthesis latency in milliseconds"
+          },
+          {
+            "name": "perception_queries",
+            "type": "int",
+            "doc": "Number of PERCEPTION queries"
+          },
+          {
+            "name": "odyssey_queries",
+            "type": "int",
+            "doc": "Number of ODYSSEY queries"
+          },
+          {
+            "name": "capsule_queries",
+            "type": "int",
+            "doc": "Number of CAPSULE queries"
+          },
+          {
+            "name": "plato_validations",
+            "type": "int",
+            "doc": "Number of PLATO governance validations"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Synthesis performance metrics"
+    },
+    {
+      "name": "nexus_context",
+      "type": ["null", "com.z254.butterfly.common.nexus.avro.NexusContext"],
+      "default": null,
+      "doc": "NEXUS-specific context"
+    },
+    {
+      "name": "metadata",
+      "type": ["null", {"type": "map", "values": "string"}],
+      "default": null,
+      "doc": "Additional event metadata"
+    },
+    {
+      "name": "schema_version",
+      "type": "string",
+      "default": "1.0.0",
+      "doc": "Schema version for backward compatibility tracking"
+    }
+  ]
+}
+

@@ -1,0 +1,206 @@
+{
+  "namespace": "com.z254.butterfly.common.governance.avro",
+  "type": "record",
+  "name": "GovernancePolicy",
+  "doc": "Cross-ecosystem governance policy distributed from PLATO to all services",
+  "fields": [
+    {
+      "name": "policyId",
+      "type": "string",
+      "doc": "Unique policy identifier (e.g., plato:policy:governance:fairness-requirement)"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "doc": "Human-readable policy name"
+    },
+    {
+      "name": "description",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Policy description"
+    },
+    {
+      "name": "version",
+      "type": "int",
+      "doc": "Policy version number"
+    },
+    {
+      "name": "enabled",
+      "type": "boolean",
+      "default": true,
+      "doc": "Whether the policy is active"
+    },
+    {
+      "name": "scope",
+      "type": {
+        "type": "record",
+        "name": "PolicyScope",
+        "doc": "Defines where the policy applies",
+        "fields": [
+          {
+            "name": "services",
+            "type": {
+              "type": "array",
+              "items": "string"
+            },
+            "doc": "List of services this policy applies to (empty = all services)"
+          },
+          {
+            "name": "objectTypes",
+            "type": {
+              "type": "array",
+              "items": "string"
+            },
+            "doc": "Object types: SPEC, ARTIFACT, PROOF, PLAN, CAPSULE, SIGNAL, EXPERIMENT, ACTION"
+          },
+          {
+            "name": "namespacePatterns",
+            "type": {
+              "type": "array",
+              "items": "string"
+            },
+            "doc": "Namespace patterns (regex) this policy applies to"
+          }
+        ]
+      },
+      "doc": "Policy application scope"
+    },
+    {
+      "name": "conditions",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "PolicyCondition",
+          "doc": "Condition that must be met for policy to apply",
+          "fields": [
+            {
+              "name": "field",
+              "type": "string",
+              "doc": "Field path to evaluate (e.g., 'status', 'metadata.owner')"
+            },
+            {
+              "name": "operator",
+              "type": {
+                "type": "enum",
+                "name": "ConditionOperator",
+                "symbols": ["EQUALS", "NOT_EQUALS", "CONTAINS", "MATCHES", "IN", "NOT_IN", "EXISTS", "NOT_EXISTS", "GREATER_THAN", "LESS_THAN"]
+              },
+              "doc": "Comparison operator"
+            },
+            {
+              "name": "value",
+              "type": ["null", "string", {"type": "array", "items": "string"}],
+              "default": null,
+              "doc": "Value to compare against"
+            }
+          ]
+        }
+      },
+      "doc": "Conditions that determine when the policy applies"
+    },
+    {
+      "name": "constraints",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "PolicyConstraint",
+          "doc": "Constraint that must be satisfied",
+          "fields": [
+            {
+              "name": "constraintType",
+              "type": {
+                "type": "enum",
+                "name": "ConstraintType",
+                "symbols": [
+                  "REQUIRE_PROOF",
+                  "REQUIRE_APPROVAL",
+                  "REQUIRE_OWNER",
+                  "REQUIRE_DESCRIPTION",
+                  "REQUIRE_LINKED_SPEC",
+                  "REQUIRE_GOVERNANCE",
+                  "LIMIT_VALUE",
+                  "IN_NAMESPACES",
+                  "HAS_TEST_SUITE",
+                  "CUSTOM_EXPRESSION",
+                  "REQUIRE_GOVERNED_ACTOR",
+                  "REQUIRE_AUDIT_CORRELATION",
+                  "EXECUTION_LIMIT"
+                ]
+              },
+              "doc": "Type of constraint"
+            },
+            {
+              "name": "parameters",
+              "type": {
+                "type": "map",
+                "values": "string"
+              },
+              "doc": "Constraint parameters (type-specific)"
+            },
+            {
+              "name": "message",
+              "type": ["null", "string"],
+              "default": null,
+              "doc": "Custom error message when constraint fails"
+            }
+          ]
+        }
+      },
+      "doc": "Constraints that must be satisfied"
+    },
+    {
+      "name": "enforcement",
+      "type": {
+        "type": "enum",
+        "name": "EnforcementLevel",
+        "symbols": ["LOG", "WARN", "BLOCK", "QUARANTINE"],
+        "doc": "What action to take on violation"
+      },
+      "doc": "Enforcement level for policy violations"
+    },
+    {
+      "name": "violationSeverity",
+      "type": {
+        "type": "enum",
+        "name": "ViolationSeverity",
+        "symbols": ["INFO", "WARNING", "ERROR", "CRITICAL"],
+        "doc": "Severity level of violations"
+      },
+      "doc": "Severity when this policy is violated"
+    },
+    {
+      "name": "priority",
+      "type": "int",
+      "default": 100,
+      "doc": "Policy evaluation priority (lower = evaluated first)"
+    },
+    {
+      "name": "tags",
+      "type": {
+        "type": "map",
+        "values": "string"
+      },
+      "doc": "Policy tags for categorization (e.g., category=fairness, compliance=SOC2)"
+    },
+    {
+      "name": "createdAt",
+      "type": "long",
+      "doc": "Creation timestamp (epoch millis)"
+    },
+    {
+      "name": "updatedAt",
+      "type": "long",
+      "doc": "Last update timestamp (epoch millis)"
+    },
+    {
+      "name": "createdBy",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Principal who created the policy"
+    }
+  ]
+}
+

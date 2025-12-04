@@ -178,6 +178,12 @@
       "type": ["null", {"type": "map", "values": "string"}],
       "default": null,
       "doc": "Additional event metadata as key-value pairs"
+    },
+    {
+      "name": "schema_version",
+      "type": "string",
+      "default": "1.0.0",
+      "doc": "Schema version for backward compatibility tracking"
     }
   ]
 }

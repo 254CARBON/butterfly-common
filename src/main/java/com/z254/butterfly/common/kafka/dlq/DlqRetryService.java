@@ -197,6 +197,44 @@ public class DlqRetryService {
     }
     
     /**
+     * Replay a single message from a ConsumerRecord to the original topic.
+     * This is a convenience method for manual replay operations.
+     *
+     * @param record        the consumer record from the DLQ
+     * @param originalTopic the original topic to replay to
+     * @return true if replay was successful
+     */
+    public boolean replayMessage(ConsumerRecord<String, String> record, String originalTopic) {
+        try {
+            DlqRecord dlqRecord = deserializeDlqRecord(record.value());
+            
+            // Override original topic if specified
+            if (originalTopic != null && !originalTopic.isBlank()) {
+                dlqRecord = DlqRecord.builder()
+                    .id(dlqRecord.getId())
+                    .originalTopic(originalTopic)
+                    .partition(dlqRecord.getPartition())
+                    .offset(dlqRecord.getOffset())
+                    .key(dlqRecord.getKey())
+                    .payload(dlqRecord.getPayload())
+                    .errorType(dlqRecord.getErrorType())
+                    .errorMessage(dlqRecord.getErrorMessage())
+                    .sourceService(dlqRecord.getSourceService())
+                    .retryCount(dlqRecord.getRetryCount())
+                    .failureCategory(dlqRecord.getFailureCategory())
+                    .status(dlqRecord.getStatus())
+                    .dlqTimestamp(dlqRecord.getDlqTimestamp())
+                    .build();
+            }
+            
+            return replayMessage(dlqRecord);
+        } catch (Exception e) {
+            log.error("Failed to replay message from offset {}: {}", record.offset(), e.getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Replay a single DLQ record to its original topic.
      */
     private boolean replayMessage(DlqRecord dlqRecord) {
@@ -346,3 +384,4 @@ public class DlqRetryService {
         }
     }
 }
+

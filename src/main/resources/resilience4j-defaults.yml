@@ -1,0 +1,318 @@
+# Resilience4j Default Configurations for BUTTERFLY Platform
+# 
+# This file provides standardized resilience patterns for all BUTTERFLY services.
+# Services should import these defaults and override only when necessary.
+#
+# Usage in service application.yml:
+#   spring:
+#     config:
+#       import: classpath:resilience4j-defaults.yml
+#
+# Or include directly via dependency on butterfly-common
+#
+# Documentation: https://resilience4j.readme.io/docs
+
+resilience4j:
+
+  # ============================================================================
+  # CIRCUIT BREAKER CONFIGURATIONS
+  # ============================================================================
+  # Circuit breakers prevent cascading failures by stopping calls to unhealthy
+  # services. Three configurations are provided based on call characteristics.
+  
+  circuitbreaker:
+    configs:
+      # Default configuration for general use
+      default:
+        registerHealthIndicator: true
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 30s
+        failureRateThreshold: 50
+        slowCallRateThreshold: 80
+        slowCallDurationThreshold: 2s
+        eventConsumerBufferSize: 100
+        recordExceptions:
+          - java.io.IOException
+          - java.net.SocketTimeoutException
+          - java.net.ConnectException
+          - java.util.concurrent.TimeoutException
+          - org.springframework.web.client.ResourceAccessException
+          - org.springframework.web.reactive.function.client.WebClientRequestException
+        ignoreExceptions:
+          - java.lang.IllegalArgumentException
+          - java.lang.IllegalStateException
+      
+      # Configuration for external API calls (third-party services)
+      # More conservative: larger window, longer wait time
+      external-api:
+        registerHealthIndicator: true
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 20
+        minimumNumberOfCalls: 10
+        permittedNumberOfCallsInHalfOpenState: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 60s
+        failureRateThreshold: 50
+        slowCallRateThreshold: 70
+        slowCallDurationThreshold: 5s
+        eventConsumerBufferSize: 100
+        recordExceptions:
+          - java.io.IOException
+          - java.net.SocketTimeoutException
+          - java.net.ConnectException
+          - java.util.concurrent.TimeoutException
+          - org.springframework.web.client.ResourceAccessException
+          - org.springframework.web.client.HttpServerErrorException
+        ignoreExceptions:
+          - org.springframework.web.client.HttpClientErrorException
+      
+      # Configuration for internal service-to-service calls
+      # More aggressive: smaller window, faster recovery
+      internal-service:
+        registerHealthIndicator: true
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 15s
+        failureRateThreshold: 50
+        slowCallRateThreshold: 90
+        slowCallDurationThreshold: 1s
+        eventConsumerBufferSize: 100
+      
+      # Configuration for database operations
+      # Very fast recovery, database retries are expensive
+      database:
+        registerHealthIndicator: true
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 2
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 60
+        slowCallRateThreshold: 80
+        slowCallDurationThreshold: 3s
+        eventConsumerBufferSize: 50
+        recordExceptions:
+          - org.springframework.dao.DataAccessException
+          - org.springframework.dao.QueryTimeoutException
+          - java.sql.SQLException
+          - com.datastax.oss.driver.api.core.AllNodesFailedException
+          - com.datastax.oss.driver.api.core.NoNodeAvailableException
+      
+      # Configuration for cache operations
+      # Very short timeout, fail fast for cache misses
+      cache:
+        registerHealthIndicator: true
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 20
+        minimumNumberOfCalls: 10
+        permittedNumberOfCallsInHalfOpenState: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 70
+        slowCallRateThreshold: 95
+        slowCallDurationThreshold: 500ms
+        eventConsumerBufferSize: 100
+        recordExceptions:
+          - io.lettuce.core.RedisConnectionException
+          - io.lettuce.core.RedisCommandTimeoutException
+          - org.apache.ignite.IgniteException
+
+  # ============================================================================
+  # RETRY CONFIGURATIONS
+  # ============================================================================
+  # Retries handle transient failures with exponential backoff and jitter.
+  
+  retry:
+    configs:
+      # Default retry configuration
+      default:
+        maxAttempts: 3
+        waitDuration: 500ms
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+        exponentialMaxWaitDuration: 5s
+        retryExceptions:
+          - java.io.IOException
+          - java.net.SocketTimeoutException
+          - java.net.ConnectException
+          - java.util.concurrent.TimeoutException
+          - org.springframework.dao.QueryTimeoutException
+          - org.springframework.dao.TransientDataAccessException
+        ignoreExceptions:
+          - java.lang.IllegalArgumentException
+          - java.lang.IllegalStateException
+          - org.springframework.dao.DuplicateKeyException
+      
+      # Conservative retry for external APIs
+      external-api:
+        maxAttempts: 3
+        waitDuration: 1s
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+        exponentialMaxWaitDuration: 10s
+        retryExceptions:
+          - java.io.IOException
+          - java.net.SocketTimeoutException
+          - org.springframework.web.client.HttpServerErrorException
+        ignoreExceptions:
+          - org.springframework.web.client.HttpClientErrorException
+      
+      # Fast retry for internal services
+      internal-service:
+        maxAttempts: 3
+        waitDuration: 200ms
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+        exponentialMaxWaitDuration: 2s
+        retryExceptions:
+          - java.io.IOException
+          - java.net.SocketTimeoutException
+          - java.util.concurrent.TimeoutException
+      
+      # Database-specific retry
+      database:
+        maxAttempts: 2
+        waitDuration: 100ms
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+        exponentialMaxWaitDuration: 1s
+        retryExceptions:
+          - org.springframework.dao.TransientDataAccessException
+          - org.springframework.dao.QueryTimeoutException
+          - com.datastax.oss.driver.api.core.servererrors.WriteTimeoutException
+          - com.datastax.oss.driver.api.core.servererrors.ReadTimeoutException
+        ignoreExceptions:
+          - org.springframework.dao.DuplicateKeyException
+          - org.springframework.dao.DataIntegrityViolationException
+      
+      # Cache retry (very fast, fail quickly)
+      cache:
+        maxAttempts: 2
+        waitDuration: 50ms
+        enableExponentialBackoff: false
+        retryExceptions:
+          - io.lettuce.core.RedisCommandTimeoutException
+
+  # ============================================================================
+  # BULKHEAD CONFIGURATIONS
+  # ============================================================================
+  # Bulkheads limit concurrent calls to prevent resource exhaustion.
+  
+  bulkhead:
+    configs:
+      # Default bulkhead
+      default:
+        maxConcurrentCalls: 25
+        maxWaitDuration: 500ms
+      
+      # External API bulkhead (limit external call concurrency)
+      external-api:
+        maxConcurrentCalls: 10
+        maxWaitDuration: 1s
+      
+      # Internal service bulkhead
+      internal-service:
+        maxConcurrentCalls: 50
+        maxWaitDuration: 250ms
+      
+      # Database bulkhead (protect connection pool)
+      database:
+        maxConcurrentCalls: 20
+        maxWaitDuration: 2s
+      
+      # Cache bulkhead
+      cache:
+        maxConcurrentCalls: 100
+        maxWaitDuration: 100ms
+      
+      # Bulk operations bulkhead (limited concurrency)
+      bulk-operations:
+        maxConcurrentCalls: 5
+        maxWaitDuration: 5s
+      
+      # ML/AI operations bulkhead (expensive operations)
+      ml-operations:
+        maxConcurrentCalls: 10
+        maxWaitDuration: 30s
+
+  # ============================================================================
+  # RATE LIMITER CONFIGURATIONS
+  # ============================================================================
+  # Rate limiters control request throughput to prevent overload.
+  
+  ratelimiter:
+    configs:
+      # Default rate limiter
+      default:
+        limitForPeriod: 100
+        limitRefreshPeriod: 1s
+        timeoutDuration: 500ms
+      
+      # External API rate limiter (respect third-party limits)
+      external-api:
+        limitForPeriod: 50
+        limitRefreshPeriod: 1s
+        timeoutDuration: 1s
+      
+      # High-throughput operations
+      high-throughput:
+        limitForPeriod: 1000
+        limitRefreshPeriod: 1s
+        timeoutDuration: 100ms
+      
+      # Low-throughput expensive operations
+      expensive-operations:
+        limitForPeriod: 10
+        limitRefreshPeriod: 1s
+        timeoutDuration: 5s
+
+  # ============================================================================
+  # TIME LIMITER CONFIGURATIONS
+  # ============================================================================
+  # Time limiters enforce maximum execution duration.
+  
+  timelimiter:
+    configs:
+      # Default time limiter
+      default:
+        timeoutDuration: 30s
+        cancelRunningFuture: true
+      
+      # External API time limiter
+      external-api:
+        timeoutDuration: 60s
+        cancelRunningFuture: true
+      
+      # Internal service time limiter
+      internal-service:
+        timeoutDuration: 10s
+        cancelRunningFuture: true
+      
+      # Database query time limiter
+      database:
+        timeoutDuration: 30s
+        cancelRunningFuture: true
+      
+      # Cache operation time limiter (very short)
+      cache:
+        timeoutDuration: 2s
+        cancelRunningFuture: true
+      
+      # ML/AI operation time limiter (longer)
+      ml-operations:
+        timeoutDuration: 120s
+        cancelRunningFuture: true
+      
+      # Bulk operations time limiter
+      bulk-operations:
+        timeoutDuration: 300s
+        cancelRunningFuture: true
+

@@ -1,0 +1,93 @@
+{
+  "namespace": "com.z254.butterfly.common.nexus.avro",
+  "type": "record",
+  "name": "UnifiedEventHeader",
+  "doc": "Unified event header for all BUTTERFLY ecosystem events. Provides correlation IDs that span all systems for distributed tracing and event correlation.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": "string",
+      "doc": "Globally unique event identifier (UUID)"
+    },
+    {
+      "name": "correlation_id",
+      "type": "string",
+      "doc": "Correlation ID for distributed tracing - persists across system boundaries"
+    },
+    {
+      "name": "causation_id",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "ID of the event that caused this event (for event sourcing)"
+    },
+    {
+      "name": "origin_system",
+      "type": {
+        "type": "enum",
+        "name": "OriginSystem",
+        "symbols": ["PERCEPTION", "CAPSULE", "ODYSSEY", "PLATO", "NEXUS", "SYNAPSE", "EXTERNAL"]
+      },
+      "doc": "System that originated this event"
+    },
+    {
+      "name": "timestamp",
+      "type": "long",
+      "doc": "Event timestamp in milliseconds since epoch"
+    },
+    {
+      "name": "trace_context",
+      "type": {
+        "type": "record",
+        "name": "TraceContext",
+        "doc": "OpenTelemetry-compatible trace context",
+        "fields": [
+          {
+            "name": "trace_id",
+            "type": "string",
+            "doc": "W3C Trace Context trace-id"
+          },
+          {
+            "name": "span_id",
+            "type": "string",
+            "doc": "W3C Trace Context span-id"
+          },
+          {
+            "name": "trace_flags",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "W3C Trace Context trace-flags"
+          },
+          {
+            "name": "trace_state",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "W3C Trace Context tracestate"
+          }
+        ]
+      }
+    },
+    {
+      "name": "nexus_context",
+      "type": ["null", "com.z254.butterfly.common.nexus.avro.NexusContext"],
+      "default": null,
+      "doc": "NEXUS-specific context for cross-module correlation"
+    },
+    {
+      "name": "source_service",
+      "type": "string",
+      "doc": "Service instance that produced this event"
+    },
+    {
+      "name": "schema_version",
+      "type": "string",
+      "default": "1.0.0",
+      "doc": "Schema version for backward compatibility"
+    },
+    {
+      "name": "tags",
+      "type": ["null", {"type": "map", "values": "string"}],
+      "default": null,
+      "doc": "Optional tags for filtering and categorization"
+    }
+  ]
+}

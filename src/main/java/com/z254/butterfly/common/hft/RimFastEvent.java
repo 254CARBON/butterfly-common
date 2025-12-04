@@ -210,3 +210,4 @@ public final class RimFastEvent {
                '}';
     }
 }
+

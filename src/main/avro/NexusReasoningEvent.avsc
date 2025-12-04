@@ -1,0 +1,270 @@
+{
+  "namespace": "com.z254.butterfly.common.nexus.avro",
+  "type": "record",
+  "name": "NexusReasoningEvent",
+  "doc": "Event schema for NEXUS autonomous reasoning events. Published when cross-system inferences are made, contradictions resolved, or hypotheses generated.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": "string",
+      "doc": "Globally unique event identifier (UUID)"
+    },
+    {
+      "name": "event_type",
+      "type": {
+        "type": "enum",
+        "name": "NexusReasoningEventType",
+        "symbols": [
+          "INFERENCE_GENERATED",
+          "CONTRADICTION_DETECTED",
+          "CONTRADICTION_RESOLVED",
+          "HYPOTHESIS_GENERATED",
+          "HYPOTHESIS_VALIDATED",
+          "HYPOTHESIS_REJECTED",
+          "RULE_TRIGGERED",
+          "REASONING_REQUEST_RECEIVED",
+          "REASONING_RESPONSE_SENT"
+        ]
+      },
+      "doc": "Type of NEXUS reasoning event"
+    },
+    {
+      "name": "timestamp",
+      "type": "long",
+      "doc": "Event timestamp in milliseconds since epoch"
+    },
+    {
+      "name": "correlation_id",
+      "type": "string",
+      "doc": "Correlation ID for distributed tracing"
+    },
+    {
+      "name": "reasoning_type",
+      "type": {
+        "type": "enum",
+        "name": "ReasoningType",
+        "symbols": [
+          "CAUSAL_INFERENCE",
+          "CONTRADICTION_RESOLUTION",
+          "HYPOTHESIS_VALIDATION",
+          "COUNTERFACTUAL_ANALYSIS",
+          "STRATEGIC_OPTION_DISCOVERY",
+          "PATTERN_RECOGNITION",
+          "ANOMALY_EXPLANATION"
+        ]
+      },
+      "doc": "Type of reasoning performed"
+    },
+    {
+      "name": "requesting_system",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "System that requested the reasoning (if applicable)"
+    },
+    {
+      "name": "affected_node_ids",
+      "type": {"type": "array", "items": "string"},
+      "doc": "RIM node IDs involved in this reasoning"
+    },
+    {
+      "name": "source_systems",
+      "type": {"type": "array", "items": "string"},
+      "doc": "BUTTERFLY systems that contributed to this reasoning"
+    },
+    {
+      "name": "inference",
+      "type": ["null", {
+        "type": "record",
+        "name": "InferenceRecord",
+        "fields": [
+          {
+            "name": "inference_id",
+            "type": "string",
+            "doc": "Unique inference identifier"
+          },
+          {
+            "name": "rule_id",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "Rule that produced this inference"
+          },
+          {
+            "name": "premises",
+            "type": {"type": "array", "items": "string"},
+            "doc": "Premises that led to this inference"
+          },
+          {
+            "name": "conclusion",
+            "type": "string",
+            "doc": "The inferred conclusion"
+          },
+          {
+            "name": "confidence",
+            "type": "double",
+            "doc": "Confidence in the inference (0.0-1.0)"
+          },
+          {
+            "name": "inference_method",
+            "type": {
+              "type": "enum",
+              "name": "InferenceMethod",
+              "symbols": ["FORWARD_CHAINING", "BACKWARD_CHAINING", "ABDUCTION", "INDUCTION", "DEDUCTION", "ML_INFERENCE"]
+            },
+            "doc": "Method used for inference"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Details of the inference"
+    },
+    {
+      "name": "contradiction",
+      "type": ["null", {
+        "type": "record",
+        "name": "ContradictionRecord",
+        "fields": [
+          {
+            "name": "contradiction_id",
+            "type": "string",
+            "doc": "Unique contradiction identifier"
+          },
+          {
+            "name": "system_a",
+            "type": "string",
+            "doc": "First system in the contradiction"
+          },
+          {
+            "name": "system_b",
+            "type": "string",
+            "doc": "Second system in the contradiction"
+          },
+          {
+            "name": "field",
+            "type": "string",
+            "doc": "Field where contradiction exists"
+          },
+          {
+            "name": "value_a",
+            "type": "string",
+            "doc": "Value from system A"
+          },
+          {
+            "name": "value_b",
+            "type": "string",
+            "doc": "Value from system B"
+          },
+          {
+            "name": "resolution",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "Resolution if contradiction was resolved"
+          },
+          {
+            "name": "resolution_confidence",
+            "type": ["null", "double"],
+            "default": null,
+            "doc": "Confidence in the resolution"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Details of the contradiction"
+    },
+    {
+      "name": "hypothesis",
+      "type": ["null", {
+        "type": "record",
+        "name": "HypothesisRecord",
+        "fields": [
+          {
+            "name": "hypothesis_id",
+            "type": "string",
+            "doc": "Unique hypothesis identifier"
+          },
+          {
+            "name": "statement",
+            "type": "string",
+            "doc": "The hypothesis statement"
+          },
+          {
+            "name": "confidence",
+            "type": "double",
+            "doc": "Initial confidence (0.0-1.0)"
+          },
+          {
+            "name": "evidence_sources",
+            "type": {"type": "array", "items": "string"},
+            "doc": "Sources supporting this hypothesis"
+          },
+          {
+            "name": "validation_status",
+            "type": {
+              "type": "enum",
+              "name": "ValidationStatus",
+              "symbols": ["PENDING", "VALIDATING", "VALIDATED", "REJECTED", "INCONCLUSIVE"]
+            },
+            "doc": "Current validation status"
+          },
+          {
+            "name": "study_id",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "PLATO study ID if study was created"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Details of the hypothesis"
+    },
+    {
+      "name": "processing_metrics",
+      "type": ["null", {
+        "type": "record",
+        "name": "ReasoningMetrics",
+        "fields": [
+          {
+            "name": "latency_ms",
+            "type": "long",
+            "doc": "Processing latency in milliseconds"
+          },
+          {
+            "name": "rules_evaluated",
+            "type": "int",
+            "doc": "Number of rules evaluated"
+          },
+          {
+            "name": "facts_considered",
+            "type": "int",
+            "doc": "Number of facts considered"
+          },
+          {
+            "name": "depth_reached",
+            "type": "int",
+            "doc": "Inference depth reached"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Reasoning performance metrics"
+    },
+    {
+      "name": "nexus_context",
+      "type": ["null", "com.z254.butterfly.common.nexus.avro.NexusContext"],
+      "default": null,
+      "doc": "NEXUS-specific context"
+    },
+    {
+      "name": "metadata",
+      "type": ["null", {"type": "map", "values": "string"}],
+      "default": null,
+      "doc": "Additional event metadata"
+    },
+    {
+      "name": "schema_version",
+      "type": "string",
+      "default": "1.0.0",
+      "doc": "Schema version for backward compatibility tracking"
+    }
+  ]
+}
+

@@ -1,0 +1,418 @@
+{
+  "namespace": "com.z254.butterfly.common.audit.avro",
+  "type": "record",
+  "name": "AuditEvent",
+  "doc": "End-to-end audit event for governance compliance across the BUTTERFLY ecosystem",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": "string",
+      "doc": "Unique event identifier (UUID)"
+    },
+    {
+      "name": "correlationId",
+      "type": "string",
+      "doc": "Governance correlation ID linking this event to the end-to-end audit trail"
+    },
+    {
+      "name": "causationId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "ID of the event that caused this event (for causal chain)"
+    },
+    {
+      "name": "parentId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "ID of the parent event in hierarchical operations"
+    },
+    {
+      "name": "traceId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Distributed tracing ID (e.g., from OpenTelemetry)"
+    },
+    {
+      "name": "spanId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Distributed tracing span ID"
+    },
+    {
+      "name": "timestamp",
+      "type": "long",
+      "doc": "Event timestamp (epoch milliseconds)"
+    },
+    {
+      "name": "actor",
+      "type": {
+        "type": "record",
+        "name": "AuditActor",
+        "doc": "The principal who performed the action",
+        "fields": [
+          {
+            "name": "subject",
+            "type": "string",
+            "doc": "Principal subject identifier"
+          },
+          {
+            "name": "tenantId",
+            "type": "string",
+            "doc": "Tenant context"
+          },
+          {
+            "name": "roles",
+            "type": {
+              "type": "array",
+              "items": "string"
+            },
+            "doc": "Actor's roles"
+          },
+          {
+            "name": "isGovernedActor",
+            "type": "boolean",
+            "default": false,
+            "doc": "Whether the actor is subject to governance"
+          },
+          {
+            "name": "issuer",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "Token issuer (for JWT-authenticated actors)"
+          }
+        ]
+      },
+      "doc": "Actor performing the action"
+    },
+    {
+      "name": "service",
+      "type": "string",
+      "doc": "Service that generated the event (perception, capsule, odyssey, plato, nexus, synapse)"
+    },
+    {
+      "name": "auditType",
+      "type": {
+        "type": "enum",
+        "name": "AuditType",
+        "symbols": [
+          "EVENT_INGESTED",
+          "SIGNAL_GENERATED",
+          "CAPSULE_CREATED",
+          "CAPSULE_UPDATED",
+          "CAPSULE_DELETED",
+          "PATH_EVALUATED",
+          "EXPERIMENT_STARTED",
+          "EXPERIMENT_COMPLETED",
+          "PLAN_CREATED",
+          "PLAN_EXECUTED",
+          "APPROVAL_REQUESTED",
+          "APPROVAL_GRANTED",
+          "APPROVAL_DENIED",
+          "ACTION_EXECUTED",
+          "ACTION_COMPLETED",
+          "ACTION_FAILED",
+          "POLICY_EVALUATED",
+          "POLICY_VIOLATED",
+          "LEARNING_SIGNAL_RECORDED",
+          "EVOLUTION_TRIGGERED",
+          "ACCESS_GRANTED",
+          "ACCESS_DENIED",
+          "CONFIG_CHANGED",
+          "ERROR_OCCURRED"
+        ],
+        "doc": "Type of audit event"
+      },
+      "doc": "Audit event type"
+    },
+    {
+      "name": "action",
+      "type": "string",
+      "doc": "Specific action performed (e.g., CREATE, READ, UPDATE, DELETE, EXECUTE)"
+    },
+    {
+      "name": "resource",
+      "type": {
+        "type": "record",
+        "name": "AuditResource",
+        "doc": "The resource being acted upon",
+        "fields": [
+          {
+            "name": "resourceType",
+            "type": "string",
+            "doc": "Type of resource (spec, artifact, proof, plan, capsule, signal, experiment, etc.)"
+          },
+          {
+            "name": "resourceId",
+            "type": "string",
+            "doc": "Resource identifier"
+          },
+          {
+            "name": "namespace",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "Resource namespace"
+          },
+          {
+            "name": "version",
+            "type": ["null", "int"],
+            "default": null,
+            "doc": "Resource version"
+          }
+        ]
+      },
+      "doc": "Resource being acted upon"
+    },
+    {
+      "name": "outcome",
+      "type": {
+        "type": "record",
+        "name": "AuditOutcome",
+        "doc": "Result of the action",
+        "fields": [
+          {
+            "name": "success",
+            "type": "boolean",
+            "doc": "Whether the action succeeded"
+          },
+          {
+            "name": "resultCode",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "Result code (e.g., HTTP status code)"
+          },
+          {
+            "name": "message",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "Outcome message"
+          },
+          {
+            "name": "errorType",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "Error type if failed"
+          },
+          {
+            "name": "durationMs",
+            "type": ["null", "long"],
+            "default": null,
+            "doc": "Action duration in milliseconds"
+          }
+        ]
+      },
+      "doc": "Action outcome"
+    },
+    {
+      "name": "governance",
+      "type": ["null", {
+        "type": "record",
+        "name": "GovernanceContext",
+        "doc": "Governance context for the audit event",
+        "fields": [
+          {
+            "name": "policiesEvaluated",
+            "type": {
+              "type": "array",
+              "items": "string"
+            },
+            "doc": "IDs of policies evaluated"
+          },
+          {
+            "name": "violations",
+            "type": {
+              "type": "array",
+              "items": {
+                "type": "record",
+                "name": "PolicyViolation",
+                "doc": "Policy violation details",
+                "fields": [
+                  {
+                    "name": "policyId",
+                    "type": "string"
+                  },
+                  {
+                    "name": "policyName",
+                    "type": "string"
+                  },
+                  {
+                    "name": "constraintType",
+                    "type": "string"
+                  },
+                  {
+                    "name": "message",
+                    "type": "string"
+                  },
+                  {
+                    "name": "severity",
+                    "type": "string"
+                  }
+                ]
+              }
+            },
+            "doc": "Policy violations detected"
+          },
+          {
+            "name": "approvalRequired",
+            "type": "boolean",
+            "default": false,
+            "doc": "Whether approval was required"
+          },
+          {
+            "name": "approvalId",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "Approval workflow ID if applicable"
+          },
+          {
+            "name": "approvers",
+            "type": {
+              "type": "array",
+              "items": "string"
+            },
+            "doc": "Subjects who approved the action"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Governance context"
+    },
+    {
+      "name": "proofs",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "AuditProof",
+          "doc": "Evidence/proof attached to the audit event",
+          "fields": [
+            {
+              "name": "proofType",
+              "type": "string",
+              "doc": "Type of proof (e.g., SIGNATURE, HASH, TIMESTAMP)"
+            },
+            {
+              "name": "value",
+              "type": "string",
+              "doc": "Proof value"
+            },
+            {
+              "name": "algorithm",
+              "type": ["null", "string"],
+              "default": null,
+              "doc": "Algorithm used (e.g., SHA-256)"
+            },
+            {
+              "name": "verificationUri",
+              "type": ["null", "string"],
+              "default": null,
+              "doc": "URI for verification"
+            }
+          ]
+        }
+      },
+      "doc": "Proofs/evidence attached to this event"
+    },
+    {
+      "name": "stageInfo",
+      "type": ["null", {
+        "type": "record",
+        "name": "PipelineStageInfo",
+        "doc": "Information about the pipeline stage for end-to-end tracing",
+        "fields": [
+          {
+            "name": "stage",
+            "type": {
+              "type": "enum",
+              "name": "PipelineStage",
+              "symbols": [
+                "RAW_EVENT",
+                "SIGNAL",
+                "CAPSULE",
+                "PATH_STRATEGY",
+                "PLAN_APPROVAL",
+                "ACTION",
+                "OUTCOME",
+                "LEARNING"
+              ],
+              "doc": "Pipeline stage in the end-to-end flow"
+            },
+            "doc": "Current pipeline stage"
+          },
+          {
+            "name": "inputRef",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "Reference to input artifact from previous stage"
+          },
+          {
+            "name": "outputRef",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "Reference to output artifact for next stage"
+          },
+          {
+            "name": "dataHash",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "Hash of relevant data for integrity verification"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Pipeline stage information for end-to-end tracing"
+    },
+    {
+      "name": "metadata",
+      "type": {
+        "type": "map",
+        "values": "string"
+      },
+      "doc": "Additional metadata (key-value pairs)"
+    },
+    {
+      "name": "tags",
+      "type": {
+        "type": "map",
+        "values": "string"
+      },
+      "doc": "Tags for categorization and filtering"
+    },
+    {
+      "name": "clientInfo",
+      "type": ["null", {
+        "type": "record",
+        "name": "ClientInfo",
+        "doc": "Client/request information",
+        "fields": [
+          {
+            "name": "ipAddress",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "Client IP address (may be anonymized)"
+          },
+          {
+            "name": "userAgent",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "User agent string"
+          },
+          {
+            "name": "requestId",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "HTTP request ID"
+          },
+          {
+            "name": "apiVersion",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "API version used"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Client information"
+    }
+  ]
+}
+

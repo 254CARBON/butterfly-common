@@ -78,3 +78,4 @@ public class SchemaRegistryHealthIndicator implements HealthIndicator {
         }
     }
 }
+

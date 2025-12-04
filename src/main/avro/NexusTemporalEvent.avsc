@@ -1,0 +1,284 @@
+{
+  "namespace": "com.z254.butterfly.common.nexus.avro",
+  "type": "record",
+  "name": "NexusTemporalEvent",
+  "doc": "Event schema for NEXUS temporal intelligence events. Published when temporal slices are queried, causal chains discovered, or anomalies detected across CAPSULE, PERCEPTION, and ODYSSEY.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": "string",
+      "doc": "Globally unique event identifier (UUID)"
+    },
+    {
+      "name": "event_type",
+      "type": {
+        "type": "enum",
+        "name": "NexusTemporalEventType",
+        "symbols": [
+          "TEMPORAL_SLICE_QUERIED",
+          "CAUSAL_CHAIN_DISCOVERED",
+          "TEMPORAL_ANOMALY_DETECTED",
+          "COHERENCE_ANALYZED",
+          "CROSS_SYSTEM_CONTRADICTION",
+          "CONFIDENCE_COLLAPSE",
+          "PREDICTION_VALIDATED",
+          "TEMPORAL_FUSION_COMPLETED"
+        ]
+      },
+      "doc": "Type of NEXUS temporal event"
+    },
+    {
+      "name": "timestamp",
+      "type": "long",
+      "doc": "Event timestamp in milliseconds since epoch"
+    },
+    {
+      "name": "correlation_id",
+      "type": "string",
+      "doc": "Correlation ID for distributed tracing across BUTTERFLY systems"
+    },
+    {
+      "name": "node_id",
+      "type": "string",
+      "doc": "Primary RIM node ID (rim:{nodeType}:{namespace}:{localId})"
+    },
+    {
+      "name": "temporal_window",
+      "type": {
+        "type": "record",
+        "name": "TemporalWindowRecord",
+        "fields": [
+          {
+            "name": "start_ts_ms",
+            "type": "long",
+            "doc": "Start of temporal window in milliseconds since epoch"
+          },
+          {
+            "name": "end_ts_ms",
+            "type": "long",
+            "doc": "End of temporal window in milliseconds since epoch"
+          },
+          {
+            "name": "resolution_seconds",
+            "type": "long",
+            "doc": "Resolution of the temporal query in seconds"
+          }
+        ]
+      }
+    },
+    {
+      "name": "systems_queried",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "enum",
+          "name": "ButterflySystem",
+          "symbols": ["CAPSULE", "PERCEPTION", "ODYSSEY", "PLATO", "NEXUS"]
+        }
+      },
+      "doc": "Systems involved in this temporal query"
+    },
+    {
+      "name": "data_sources",
+      "type": ["null", {
+        "type": "record",
+        "name": "DataSources",
+        "fields": [
+          {
+            "name": "capsule_ids",
+            "type": ["null", {"type": "array", "items": "string"}],
+            "default": null,
+            "doc": "CAPSULE IDs that contributed to this event"
+          },
+          {
+            "name": "rim_state_id",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "RIM state ID from PERCEPTION"
+          },
+          {
+            "name": "odyssey_path_ids",
+            "type": ["null", {"type": "array", "items": "string"}],
+            "default": null,
+            "doc": "ODYSSEY path IDs that contributed"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Source objects from each system"
+    },
+    {
+      "name": "confidence",
+      "type": {
+        "type": "record",
+        "name": "ConfidenceRecord",
+        "fields": [
+          {
+            "name": "overall",
+            "type": "double",
+            "doc": "Overall confidence (0.0-1.0)"
+          },
+          {
+            "name": "by_system",
+            "type": {"type": "map", "values": "double"},
+            "doc": "Confidence by source system"
+          },
+          {
+            "name": "agreement_score",
+            "type": "double",
+            "doc": "Cross-system agreement score (0.0-1.0)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "anomaly_details",
+      "type": ["null", {
+        "type": "record",
+        "name": "AnomalyDetails",
+        "fields": [
+          {
+            "name": "anomaly_id",
+            "type": "string",
+            "doc": "Unique anomaly identifier"
+          },
+          {
+            "name": "anomaly_type",
+            "type": {
+              "type": "enum",
+              "name": "AnomalyType",
+              "symbols": [
+                "CROSS_SYSTEM_CONTRADICTION",
+                "HISTORICAL_DISCONTINUITY",
+                "PRESENT_FUTURE_MISMATCH",
+                "CAUSAL_LOOP_DETECTED",
+                "CONFIDENCE_COLLAPSE",
+                "MISSING_DATA_PATTERN",
+                "REGIME_TRANSITION",
+                "PREDICTION_FAILURE",
+                "SIGNAL_ANOMALY",
+                "DIVERGENCE_SPIKE"
+              ]
+            },
+            "doc": "Classification of the anomaly"
+          },
+          {
+            "name": "severity",
+            "type": "double",
+            "doc": "Anomaly severity (0.0-1.0)"
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "doc": "Human-readable description"
+          },
+          {
+            "name": "affected_dimensions",
+            "type": {"type": "array", "items": "string"},
+            "doc": "Temporal dimensions affected (PAST, PRESENT, FUTURE, CROSS_TEMPORAL)"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Details if this is an anomaly event"
+    },
+    {
+      "name": "causal_chain",
+      "type": ["null", {
+        "type": "record",
+        "name": "CausalChainSummary",
+        "fields": [
+          {
+            "name": "chain_id",
+            "type": "string",
+            "doc": "Unique chain identifier"
+          },
+          {
+            "name": "chain_length",
+            "type": "int",
+            "doc": "Number of links in the chain"
+          },
+          {
+            "name": "root_cause_system",
+            "type": "string",
+            "doc": "System containing the root cause"
+          },
+          {
+            "name": "final_effect_system",
+            "type": "string",
+            "doc": "System containing the final effect"
+          },
+          {
+            "name": "discovery_method",
+            "type": {
+              "type": "enum",
+              "name": "DiscoveryMethod",
+              "symbols": ["TEMPORAL_CORRELATION", "GRAPH_TRAVERSAL", "PATTERN_MATCHING", "ML_INFERENCE", "RULE_BASED"]
+            },
+            "doc": "How the chain was discovered"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Summary if this is a causal chain event"
+    },
+    {
+      "name": "query_metrics",
+      "type": ["null", {
+        "type": "record",
+        "name": "QueryMetrics",
+        "fields": [
+          {
+            "name": "total_latency_ms",
+            "type": "long",
+            "doc": "Total query latency in milliseconds"
+          },
+          {
+            "name": "capsule_latency_ms",
+            "type": ["null", "long"],
+            "default": null,
+            "doc": "CAPSULE query latency"
+          },
+          {
+            "name": "perception_latency_ms",
+            "type": ["null", "long"],
+            "default": null,
+            "doc": "PERCEPTION query latency"
+          },
+          {
+            "name": "odyssey_latency_ms",
+            "type": ["null", "long"],
+            "default": null,
+            "doc": "ODYSSEY query latency"
+          },
+          {
+            "name": "records_processed",
+            "type": "int",
+            "doc": "Number of records processed"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Performance metrics for the query"
+    },
+    {
+      "name": "nexus_context",
+      "type": ["null", "com.z254.butterfly.common.nexus.avro.NexusContext"],
+      "default": null,
+      "doc": "NEXUS-specific context for cross-module correlation"
+    },
+    {
+      "name": "metadata",
+      "type": ["null", {"type": "map", "values": "string"}],
+      "default": null,
+      "doc": "Additional event metadata"
+    },
+    {
+      "name": "schema_version",
+      "type": "string",
+      "default": "1.0.0",
+      "doc": "Schema version for backward compatibility tracking"
+    }
+  ]
+}
+

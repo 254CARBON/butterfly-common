@@ -1,0 +1,82 @@
+{
+  "namespace": "com.z254.butterfly.common.learning.avro",
+  "type": "record",
+  "name": "CrossSystemCorrelation",
+  "doc": "A discovered correlation between BUTTERFLY systems. Part of Phase 6 Global Learning Loops.",
+  "fields": [
+    {
+      "name": "correlationId",
+      "type": "string",
+      "doc": "Unique identifier for this correlation"
+    },
+    {
+      "name": "sourceSystems",
+      "type": {
+        "type": "array",
+        "items": "com.z254.butterfly.common.learning.avro.SystemId"
+      },
+      "doc": "Systems involved in the correlation"
+    },
+    {
+      "name": "correlationType",
+      "type": {
+        "type": "enum",
+        "name": "CorrelationType",
+        "symbols": [
+          "PREDICTION_ACCURACY",
+          "PERFORMANCE_DEGRADATION",
+          "LEARNING_EFFECTIVENESS",
+          "ERROR_RATE",
+          "LATENCY",
+          "THROUGHPUT",
+          "CONFIDENCE_CALIBRATION",
+          "OUTCOME"
+        ]
+      },
+      "doc": "Type of correlation discovered"
+    },
+    {
+      "name": "correlationStrength",
+      "type": "double",
+      "doc": "Strength of correlation (-1.0 to 1.0)"
+    },
+    {
+      "name": "confidence",
+      "type": "double",
+      "doc": "Confidence in the correlation (0.0 to 1.0)"
+    },
+    {
+      "name": "sampleSize",
+      "type": "int",
+      "doc": "Number of observations used"
+    },
+    {
+      "name": "timeWindow",
+      "type": "string",
+      "doc": "ISO-8601 duration string for the observation window"
+    },
+    {
+      "name": "description",
+      "type": "string",
+      "doc": "Human-readable description"
+    },
+    {
+      "name": "causalDirection",
+      "type": {
+        "type": "enum",
+        "name": "CausalDirection",
+        "symbols": ["A_CAUSES_B", "B_CAUSES_A", "BIDIRECTIONAL", "UNKNOWN", "COMMON_CAUSE"]
+      },
+      "doc": "Suspected causal direction"
+    },
+    {
+      "name": "discoveredAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "When this correlation was discovered"
+    }
+  ]
+}
+
