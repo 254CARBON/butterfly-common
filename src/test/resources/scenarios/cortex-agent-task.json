@@ -1,0 +1,194 @@
+{
+  "name": "cortex-agent-task",
+  "description": "End-to-end AI agent task execution through CORTEX with tool calls via SYNAPSE",
+  "version": "1.0.0",
+  "services": ["CORTEX", "SYNAPSE", "PLATO"],
+  "timeout": "180s",
+  "setup": {
+    "description": "Ensure test conversation and tools are available",
+    "steps": [
+      {
+        "service": "SYNAPSE",
+        "action": "ensure_tool_registered",
+        "data": {
+          "toolId": "test-query-tool",
+          "name": "Test Query Tool",
+          "description": "A test tool for E2E scenarios",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "query": { "type": "string" }
+            }
+          },
+          "riskLevel": "LOW"
+        }
+      }
+    ]
+  },
+  "flow": [
+    {
+      "step": 1,
+      "name": "Create conversation",
+      "service": "CORTEX",
+      "action": "POST /api/v1/conversations",
+      "request": {
+        "title": "E2E Test Conversation",
+        "systemPrompt": "You are a helpful assistant for testing purposes.",
+        "agentType": "default",
+        "context": {
+          "testMode": true
+        }
+      },
+      "expectedResponse": {
+        "status": 201,
+        "body": {
+          "id": { "notNull": true }
+        }
+      },
+      "sla": "500ms",
+      "outputs": {
+        "conversationId": "$.id"
+      }
+    },
+    {
+      "step": 2,
+      "name": "Submit agent task",
+      "service": "CORTEX",
+      "action": "POST /api/v1/tasks",
+      "request": {
+        "prompt": "Please use the test-query-tool to query for 'e2e-test-data'",
+        "agentType": "tool-using",
+        "enabledTools": ["test-query-tool"],
+        "maxIterations": 5,
+        "context": {
+          "conversationId": "${step1.conversationId}"
+        }
+      },
+      "expectedResponse": {
+        "status": 202,
+        "body": {
+          "taskId": { "notNull": true },
+          "status": { "in": ["PENDING", "RUNNING"] }
+        }
+      },
+      "sla": "1000ms",
+      "outputs": {
+        "taskId": "$.taskId"
+      }
+    },
+    {
+      "step": 3,
+      "name": "Stream agent thoughts",
+      "type": "stream",
+      "service": "CORTEX",
+      "endpoint": "GET /api/v1/tasks/${step2.taskId}/thoughts",
+      "timeout": "60s",
+      "assertions": [
+        {
+          "event": "thought",
+          "assertion": "$.type in ['THINKING', 'TOOL_CALL', 'TOOL_RESULT', 'RESPONSE']"
+        }
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Wait for task completion",
+      "type": "wait",
+      "condition": {
+        "service": "CORTEX",
+        "endpoint": "GET /api/v1/tasks/${step2.taskId}",
+        "assertion": "$.status in ['COMPLETED', 'FAILED']"
+      },
+      "timeout": "90s",
+      "pollInterval": "2s"
+    },
+    {
+      "step": 5,
+      "name": "Verify task result",
+      "service": "CORTEX",
+      "action": "GET /api/v1/tasks/{taskId}",
+      "parameters": {
+        "taskId": "${step2.taskId}"
+      },
+      "expectedResponse": {
+        "status": 200,
+        "body": {
+          "status": "COMPLETED",
+          "result": { "notNull": true }
+        }
+      },
+      "sla": "300ms"
+    },
+    {
+      "step": 6,
+      "name": "Verify SYNAPSE action was executed",
+      "service": "SYNAPSE",
+      "action": "GET /api/v1/actions",
+      "parameters": {
+        "correlationId": "${correlationId}",
+        "from": "${step2.timestamp}",
+        "limit": 10
+      },
+      "expectedResponse": {
+        "status": 200,
+        "body": {
+          "data": {
+            "minLength": 1
+          }
+        }
+      },
+      "sla": "300ms"
+    },
+    {
+      "step": 7,
+      "name": "Send follow-up message",
+      "service": "CORTEX",
+      "action": "POST /api/v1/conversations/{conversationId}/messages",
+      "parameters": {
+        "conversationId": "${step1.conversationId}"
+      },
+      "request": {
+        "content": "What was the result of the query?"
+      },
+      "expectedResponse": {
+        "status": 200,
+        "body": {
+          "role": "assistant",
+          "content": { "notNull": true }
+        }
+      },
+      "sla": "5000ms"
+    }
+  ],
+  "teardown": {
+    "steps": [
+      {
+        "service": "CORTEX",
+        "action": "delete_conversation",
+        "data": {
+          "conversationId": "${step1.conversationId}"
+        }
+      }
+    ]
+  },
+  "assertions": {
+    "global": [
+      {
+        "name": "Agent completed task",
+        "assertion": "step5.status == 'COMPLETED'"
+      },
+      {
+        "name": "Tool was called",
+        "assertion": "step6.data.length >= 1"
+      },
+      {
+        "name": "No governance violations",
+        "assertion": "flow.governanceViolations.count == 0"
+      },
+      {
+        "name": "Total execution time reasonable",
+        "assertion": "flow.totalDuration < 120s"
+      }
+    ]
+  }
+}

@@ -1,0 +1,148 @@
+{
+  "name": "perception-to-storyline",
+  "description": "End-to-end flow from PERCEPTION event detection through CAPSULE storage to ODYSSEY storyline",
+  "version": "1.0.0",
+  "services": ["PERCEPTION", "CAPSULE", "ODYSSEY"],
+  "timeout": "60s",
+  "setup": {
+    "description": "Pre-requisites for test execution",
+    "steps": [
+      {
+        "service": "PERCEPTION",
+        "action": "ensure_rim_node_exists",
+        "data": {
+          "rimNodeId": "rim:entity:test:scenario-1",
+          "namespace": "test",
+          "type": "scenario-entity"
+        }
+      }
+    ]
+  },
+  "flow": [
+    {
+      "step": 1,
+      "name": "Submit observation to PERCEPTION",
+      "service": "PERCEPTION",
+      "action": "POST /api/v1/rim/nodes/{rimNodeId}/observations",
+      "parameters": {
+        "rimNodeId": "${setup.rimNodeId}"
+      },
+      "request": {
+        "data": {
+          "metric": "price",
+          "value": 100.5,
+          "delta": 5.2
+        },
+        "source": "e2e-test",
+        "confidence": 0.95
+      },
+      "expectedResponse": {
+        "status": 202,
+        "body": {
+          "accepted": true
+        }
+      },
+      "sla": "200ms",
+      "outputs": {
+        "observationId": "$.observationId"
+      }
+    },
+    {
+      "step": 2,
+      "name": "Wait for signal generation",
+      "type": "wait",
+      "condition": {
+        "service": "PERCEPTION",
+        "endpoint": "GET /api/v1/signals",
+        "params": { "rimNodeId": "${setup.rimNodeId}", "since": "${step1.timestamp}" },
+        "assertion": "$.data.length > 0"
+      },
+      "timeout": "5s",
+      "pollInterval": "500ms"
+    },
+    {
+      "step": 3,
+      "name": "Verify CAPSULE received event via Kafka",
+      "type": "kafka_assertion",
+      "topic": "perception.capsule.handoff",
+      "condition": {
+        "filter": "$.correlationId == '${correlationId}'",
+        "assertion": "$.rimNodeId == '${setup.rimNodeId}'"
+      },
+      "timeout": "10s"
+    },
+    {
+      "step": 4,
+      "name": "Query CAPSULE for created capsule",
+      "service": "CAPSULE",
+      "action": "GET /api/v1/capsules",
+      "parameters": {
+        "scopeId": "${setup.rimNodeId}",
+        "from": "${step1.timestamp}",
+        "limit": 10
+      },
+      "expectedResponse": {
+        "status": 200,
+        "body": {
+          "data": {
+            "minLength": 1
+          }
+        }
+      },
+      "sla": "300ms",
+      "outputs": {
+        "capsuleId": "$.data[0].id"
+      }
+    },
+    {
+      "step": 5,
+      "name": "Verify ODYSSEY world state updated",
+      "service": "ODYSSEY",
+      "action": "GET /api/v1/world-state",
+      "expectedResponse": {
+        "status": 200
+      },
+      "sla": "500ms"
+    },
+    {
+      "step": 6,
+      "name": "Query ODYSSEY paths for affected scope",
+      "service": "ODYSSEY",
+      "action": "GET /api/v1/paths",
+      "parameters": {
+        "scopeId": "${setup.rimNodeId}"
+      },
+      "expectedResponse": {
+        "status": 200
+      },
+      "sla": "400ms"
+    }
+  ],
+  "teardown": {
+    "steps": [
+      {
+        "service": "CAPSULE",
+        "action": "cleanup_test_capsules",
+        "data": {
+          "scopeId": "${setup.rimNodeId}"
+        }
+      }
+    ]
+  },
+  "assertions": {
+    "global": [
+      {
+        "name": "Total flow duration",
+        "assertion": "flow.totalDuration < 30s"
+      },
+      {
+        "name": "No errors",
+        "assertion": "flow.errors.count == 0"
+      },
+      {
+        "name": "All steps completed",
+        "assertion": "flow.completedSteps == 6"
+      }
+    ]
+  }
+}

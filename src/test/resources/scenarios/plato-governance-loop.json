@@ -1,0 +1,190 @@
+{
+  "name": "plato-governance-loop",
+  "description": "End-to-end governance flow: plan creation, approval, execution via SYNAPSE",
+  "version": "1.0.0",
+  "services": ["PLATO", "SYNAPSE"],
+  "timeout": "120s",
+  "setup": {
+    "description": "Ensure test policy exists",
+    "steps": [
+      {
+        "service": "PLATO",
+        "action": "ensure_policy_exists",
+        "data": {
+          "policyId": "test-e2e-policy",
+          "category": "action-approval",
+          "rules": {
+            "requireApproval": true,
+            "maxRiskLevel": "MEDIUM"
+          }
+        }
+      }
+    ]
+  },
+  "flow": [
+    {
+      "step": 1,
+      "name": "Create governance plan",
+      "service": "PLATO",
+      "action": "POST /api/v1/plans",
+      "request": {
+        "name": "E2E Test Plan",
+        "description": "Test plan for e2e scenario",
+        "steps": [
+          {
+            "toolId": "test-tool-1",
+            "parameters": { "action": "test" },
+            "riskLevel": "LOW"
+          }
+        ],
+        "policyId": "${setup.policyId}"
+      },
+      "expectedResponse": {
+        "status": 201,
+        "body": {
+          "id": { "notNull": true },
+          "status": "PENDING_APPROVAL"
+        }
+      },
+      "sla": "500ms",
+      "outputs": {
+        "planId": "$.id"
+      }
+    },
+    {
+      "step": 2,
+      "name": "Request approval",
+      "service": "PLATO",
+      "action": "POST /api/v1/plans/{planId}/approve",
+      "parameters": {
+        "planId": "${step1.planId}"
+      },
+      "request": {
+        "approver": "e2e-test-approver",
+        "decision": "APPROVED",
+        "notes": "Automated E2E test approval"
+      },
+      "expectedResponse": {
+        "status": 200,
+        "body": {
+          "approved": true
+        }
+      },
+      "sla": "300ms"
+    },
+    {
+      "step": 3,
+      "name": "Verify plan status updated",
+      "service": "PLATO",
+      "action": "GET /api/v1/plans/{planId}",
+      "parameters": {
+        "planId": "${step1.planId}"
+      },
+      "expectedResponse": {
+        "status": 200,
+        "body": {
+          "status": "APPROVED"
+        }
+      },
+      "sla": "200ms"
+    },
+    {
+      "step": 4,
+      "name": "Execute action via SYNAPSE",
+      "service": "SYNAPSE",
+      "action": "POST /api/v1/actions",
+      "request": {
+        "toolId": "test-tool-1",
+        "parameters": { "action": "test" },
+        "planId": "${step1.planId}",
+        "stepId": "step-1"
+      },
+      "expectedResponse": {
+        "status": 202,
+        "body": {
+          "actionId": { "notNull": true },
+          "status": { "in": ["PENDING", "EXECUTING", "COMPLETED"] }
+        }
+      },
+      "sla": "1000ms",
+      "outputs": {
+        "actionId": "$.actionId"
+      }
+    },
+    {
+      "step": 5,
+      "name": "Wait for action completion",
+      "type": "wait",
+      "condition": {
+        "service": "SYNAPSE",
+        "endpoint": "GET /api/v1/actions/${step4.actionId}",
+        "assertion": "$.status in ['COMPLETED', 'FAILED']"
+      },
+      "timeout": "30s",
+      "pollInterval": "1s"
+    },
+    {
+      "step": 6,
+      "name": "Verify action result",
+      "service": "SYNAPSE",
+      "action": "GET /api/v1/actions/{actionId}",
+      "parameters": {
+        "actionId": "${step4.actionId}"
+      },
+      "expectedResponse": {
+        "status": 200,
+        "body": {
+          "status": "COMPLETED"
+        }
+      },
+      "sla": "200ms"
+    },
+    {
+      "step": 7,
+      "name": "Record decision feedback",
+      "service": "PLATO",
+      "action": "POST /api/v1/decisions/{planId}/feedback",
+      "parameters": {
+        "planId": "${step1.planId}"
+      },
+      "request": {
+        "outcome": "SUCCESS",
+        "metrics": {
+          "executionTime": "${step6.durationMs}",
+          "success": true
+        }
+      },
+      "expectedResponse": {
+        "status": 200
+      },
+      "sla": "300ms"
+    }
+  ],
+  "teardown": {
+    "steps": [
+      {
+        "service": "PLATO",
+        "action": "archive_plan",
+        "data": {
+          "planId": "${step1.planId}"
+        }
+      }
+    ]
+  },
+  "assertions": {
+    "global": [
+      {
+        "name": "Governance flow complete",
+        "assertion": "flow.completedSteps == 7"
+      },
+      {
+        "name": "Action executed successfully",
+        "assertion": "step6.status == 'COMPLETED'"
+      },
+      {
+        "name": "No safety violations",
+        "assertion": "flow.safetyViolations.count == 0"
+      }
+    ]
+  }
+}

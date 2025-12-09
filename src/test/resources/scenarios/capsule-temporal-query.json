@@ -1,0 +1,132 @@
+{
+  "name": "capsule-temporal-query",
+  "description": "End-to-end temporal query flow through CAPSULE and NEXUS",
+  "version": "1.0.0",
+  "services": ["CAPSULE", "NEXUS"],
+  "timeout": "30s",
+  "setup": {
+    "description": "Create test capsules with known temporal data",
+    "steps": [
+      {
+        "service": "CAPSULE",
+        "action": "create_test_capsules",
+        "data": {
+          "scopeId": "test:temporal-scenario",
+          "count": 5,
+          "intervalMs": 1000
+        }
+      }
+    ]
+  },
+  "flow": [
+    {
+      "step": 1,
+      "name": "Query temporal slice at T1",
+      "service": "CAPSULE",
+      "action": "GET /api/v1/temporal/slice",
+      "parameters": {
+        "scopeId": "${setup.scopeId}",
+        "timestamp": "${setup.timestamps[0]}"
+      },
+      "expectedResponse": {
+        "status": 200,
+        "body": {
+          "state": { "notNull": true }
+        }
+      },
+      "sla": "300ms",
+      "outputs": {
+        "stateT1": "$.state"
+      }
+    },
+    {
+      "step": 2,
+      "name": "Query temporal slice at T5",
+      "service": "CAPSULE",
+      "action": "GET /api/v1/temporal/slice",
+      "parameters": {
+        "scopeId": "${setup.scopeId}",
+        "timestamp": "${setup.timestamps[4]}"
+      },
+      "expectedResponse": {
+        "status": 200
+      },
+      "sla": "300ms",
+      "outputs": {
+        "stateT5": "$.state"
+      }
+    },
+    {
+      "step": 3,
+      "name": "Query state evolution",
+      "service": "CAPSULE",
+      "action": "GET /api/v1/temporal/evolution",
+      "parameters": {
+        "scopeId": "${setup.scopeId}",
+        "from": "${setup.timestamps[0]}",
+        "to": "${setup.timestamps[4]}",
+        "resolution": 5
+      },
+      "expectedResponse": {
+        "status": 200,
+        "body": {
+          "data": {
+            "length": 5
+          }
+        }
+      },
+      "sla": "500ms"
+    },
+    {
+      "step": 4,
+      "name": "Query NEXUS causal chains",
+      "service": "NEXUS",
+      "action": "GET /api/v1/temporal/causal-chains",
+      "parameters": {
+        "entityId": "${setup.scopeId}",
+        "depth": 3
+      },
+      "expectedResponse": {
+        "status": 200
+      },
+      "sla": "1000ms"
+    },
+    {
+      "step": 5,
+      "name": "Detect temporal anomalies",
+      "service": "NEXUS",
+      "action": "GET /api/v1/temporal/anomalies",
+      "parameters": {
+        "entityId": "${setup.scopeId}",
+        "since": "${setup.timestamps[0]}"
+      },
+      "expectedResponse": {
+        "status": 200
+      },
+      "sla": "800ms"
+    }
+  ],
+  "teardown": {
+    "steps": [
+      {
+        "service": "CAPSULE",
+        "action": "cleanup_test_capsules",
+        "data": {
+          "scopeId": "${setup.scopeId}"
+        }
+      }
+    ]
+  },
+  "assertions": {
+    "global": [
+      {
+        "name": "Temporal consistency",
+        "assertion": "step1.stateT1 != step2.stateT5 || step3.data.length >= 2"
+      },
+      {
+        "name": "All queries successful",
+        "assertion": "flow.errors.count == 0"
+      }
+    ]
+  }
+}
