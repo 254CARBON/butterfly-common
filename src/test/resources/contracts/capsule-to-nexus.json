@@ -1,0 +1,131 @@
+{
+  "consumer": "CAPSULE",
+  "provider": "NEXUS",
+  "version": "1.0.0",
+  "description": "Contract for CAPSULE consuming NEXUS APIs for learning signals and reasoning queries",
+  "defaultSla": {
+    "p50Millis": 150,
+    "p95Millis": 750,
+    "p99Millis": 1500,
+    "availabilityPercent": 99.5,
+    "errorRatePercent": 2
+  },
+  "interactions": [
+    {
+      "name": "submitLearningSignal",
+      "description": "Submit a learning signal for cross-system calibration",
+      "method": "POST",
+      "path": "/api/v1/learning/signal",
+      "requestSchema": {
+        "type": "object",
+        "required": ["signalType", "sourceEntity", "outcome"],
+        "properties": {
+          "signalType": { 
+            "type": "string",
+            "enum": ["PREDICTION_OUTCOME", "DECISION_FEEDBACK", "MODEL_DRIFT", "ANOMALY_DETECTED"]
+          },
+          "sourceEntity": { "type": "string" },
+          "outcome": { "type": "object" },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "correlationId": { "type": "string" },
+          "timestamp": { "type": "integer" }
+        }
+      },
+      "responseSchema": {
+        "type": "object",
+        "required": ["signalId", "acknowledged"],
+        "properties": {
+          "signalId": { "type": "string" },
+          "acknowledged": { "type": "boolean" },
+          "processedAt": { "type": "string", "format": "date-time" },
+          "calibrationScheduled": { "type": "boolean" }
+        }
+      },
+      "expectedStatus": 202,
+      "slaMillis": 200,
+      "requiredHeaders": ["X-Correlation-ID"]
+    },
+    {
+      "name": "getInferences",
+      "description": "Get reasoning inferences for an entity",
+      "method": "GET",
+      "path": "/api/v1/reasoning/inferences",
+      "requestSchema": {
+        "type": "object",
+        "properties": {
+          "entityId": { "type": "string" },
+          "limit": { "type": "integer", "default": 20 }
+        }
+      },
+      "responseSchema": {
+        "type": "object",
+        "required": ["data"],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "type", "confidence"],
+              "properties": {
+                "id": { "type": "string" },
+                "type": { "type": "string" },
+                "confidence": { "type": "number" },
+                "evidence": { "type": "array" },
+                "createdAt": { "type": "string", "format": "date-time" }
+              }
+            }
+          },
+          "pagination": { "$ref": "#/definitions/Pagination" }
+        }
+      },
+      "expectedStatus": 200,
+      "slaMillis": 500,
+      "requiredHeaders": []
+    },
+    {
+      "name": "getCausalChains",
+      "description": "Get causal chain analysis for an entity",
+      "method": "GET",
+      "path": "/api/v1/temporal/causal-chains",
+      "requestSchema": {
+        "type": "object",
+        "required": ["entityId"],
+        "properties": {
+          "entityId": { "type": "string" },
+          "depth": { "type": "integer", "default": 5 }
+        }
+      },
+      "responseSchema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "causeId": { "type": "string" },
+                "effectId": { "type": "string" },
+                "strength": { "type": "number" },
+                "lag": { "type": "integer" }
+              }
+            }
+          }
+        }
+      },
+      "expectedStatus": 200,
+      "slaMillis": 1000,
+      "requiredHeaders": []
+    }
+  ],
+  "definitions": {
+    "Pagination": {
+      "type": "object",
+      "properties": {
+        "offset": { "type": "integer" },
+        "limit": { "type": "integer" },
+        "total": { "type": "integer" },
+        "hasNext": { "type": "boolean" }
+      }
+    }
+  }
+}

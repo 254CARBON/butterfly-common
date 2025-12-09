@@ -79,6 +79,13 @@ public class ServiceClientProperties {
             .withServiceId("synapse");
 
     /**
+     * CORTEX service configuration.
+     */
+    private ServiceConfig cortex = new ServiceConfig()
+            .withUrl("http://localhost:8086")
+            .withServiceId("cortex");
+
+    /**
      * Default configuration applied to all services unless overridden.
      */
     private ServiceConfig defaults = new ServiceConfig();

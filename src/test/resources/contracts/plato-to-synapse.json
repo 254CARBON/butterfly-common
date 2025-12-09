@@ -1,0 +1,138 @@
+{
+  "consumer": "PLATO",
+  "provider": "SYNAPSE",
+  "version": "1.0.0",
+  "description": "Contract for PLATO consuming SYNAPSE APIs for action execution and workflow management",
+  "defaultSla": {
+    "p50Millis": 200,
+    "p95Millis": 1000,
+    "p99Millis": 3000,
+    "availabilityPercent": 99.5,
+    "errorRatePercent": 2
+  },
+  "interactions": [
+    {
+      "name": "executeAction",
+      "description": "Execute an action through SYNAPSE",
+      "method": "POST",
+      "path": "/api/v1/actions",
+      "requestSchema": {
+        "type": "object",
+        "required": ["toolId", "parameters", "planId"],
+        "properties": {
+          "toolId": { "type": "string" },
+          "parameters": { "type": "object" },
+          "planId": { "type": "string", "description": "PLATO plan ID for governance" },
+          "stepId": { "type": "string", "description": "PLATO step ID within plan" },
+          "rimNodeId": { "type": "string" },
+          "correlationId": { "type": "string" },
+          "dryRun": { "type": "boolean", "default": false }
+        }
+      },
+      "responseSchema": {
+        "type": "object",
+        "required": ["actionId", "status"],
+        "properties": {
+          "actionId": { "type": "string" },
+          "status": { 
+            "type": "string",
+            "enum": ["PENDING", "EXECUTING", "COMPLETED", "FAILED", "CANCELLED"]
+          },
+          "result": { "type": "object" },
+          "executedAt": { "type": "string", "format": "date-time" },
+          "durationMs": { "type": "integer" }
+        }
+      },
+      "expectedStatus": 202,
+      "slaMillis": 500,
+      "requiredHeaders": ["X-Tenant-ID", "X-Correlation-ID", "X-PLATO-Plan-ID"]
+    },
+    {
+      "name": "getAction",
+      "description": "Get action status and result",
+      "method": "GET",
+      "path": "/api/v1/actions/{actionId}",
+      "requestSchema": {},
+      "responseSchema": {
+        "type": "object",
+        "required": ["actionId", "status"],
+        "properties": {
+          "actionId": { "type": "string" },
+          "status": { "type": "string" },
+          "toolId": { "type": "string" },
+          "result": { "type": "object" },
+          "error": { "type": "string" },
+          "executedAt": { "type": "string", "format": "date-time" },
+          "completedAt": { "type": "string", "format": "date-time" },
+          "durationMs": { "type": "integer" }
+        }
+      },
+      "expectedStatus": 200,
+      "slaMillis": 200,
+      "requiredHeaders": []
+    },
+    {
+      "name": "createWorkflow",
+      "description": "Create a multi-step workflow",
+      "method": "POST",
+      "path": "/api/v1/workflows",
+      "requestSchema": {
+        "type": "object",
+        "required": ["steps", "planId"],
+        "properties": {
+          "name": { "type": "string" },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["toolId"],
+              "properties": {
+                "toolId": { "type": "string" },
+                "parameters": { "type": "object" },
+                "dependsOn": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          },
+          "planId": { "type": "string" },
+          "rollbackOnFailure": { "type": "boolean", "default": true }
+        }
+      },
+      "responseSchema": {
+        "type": "object",
+        "required": ["workflowId", "status"],
+        "properties": {
+          "workflowId": { "type": "string" },
+          "status": { "type": "string" },
+          "steps": { "type": "array" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "expectedStatus": 201,
+      "slaMillis": 300,
+      "requiredHeaders": ["X-Tenant-ID", "X-PLATO-Plan-ID"]
+    },
+    {
+      "name": "getSafetyStatus",
+      "description": "Get current safety status of SYNAPSE",
+      "method": "GET",
+      "path": "/api/v1/safety/status",
+      "requestSchema": {},
+      "responseSchema": {
+        "type": "object",
+        "required": ["safetyState", "killSwitchActive"],
+        "properties": {
+          "safetyState": { 
+            "type": "string",
+            "enum": ["NORMAL", "CAUTION", "RESTRICTED", "EMERGENCY_STOP"]
+          },
+          "killSwitchActive": { "type": "boolean" },
+          "activeRestrictions": { "type": "array" },
+          "lastIncident": { "type": "string", "format": "date-time" }
+        }
+      },
+      "expectedStatus": 200,
+      "slaMillis": 100,
+      "requiredHeaders": []
+    }
+  ]
+}

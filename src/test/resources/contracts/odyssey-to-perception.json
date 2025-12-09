@@ -1,0 +1,142 @@
+{
+  "consumer": "ODYSSEY",
+  "provider": "PERCEPTION",
+  "version": "1.0.0",
+  "description": "Contract for ODYSSEY consuming PERCEPTION APIs for RIM node data and signals",
+  "defaultSla": {
+    "p50Millis": 80,
+    "p95Millis": 300,
+    "p99Millis": 600,
+    "availabilityPercent": 99.9,
+    "errorRatePercent": 1
+  },
+  "interactions": [
+    {
+      "name": "getRimNode",
+      "description": "Get RIM node information",
+      "method": "GET",
+      "path": "/api/v1/rim/nodes/{rimNodeId}",
+      "requestSchema": {},
+      "responseSchema": {
+        "type": "object",
+        "required": ["id", "namespace", "type", "state"],
+        "properties": {
+          "id": { "type": "string" },
+          "namespace": { "type": "string" },
+          "type": { "type": "string" },
+          "state": { "type": "object" },
+          "lastUpdated": { "type": "string", "format": "date-time" },
+          "trustScore": { "type": "number" },
+          "connections": { "type": "array" }
+        }
+      },
+      "expectedStatus": 200,
+      "slaMillis": 150,
+      "requiredHeaders": []
+    },
+    {
+      "name": "getRimNodesByNamespace",
+      "description": "List RIM nodes in a namespace",
+      "method": "GET",
+      "path": "/api/v1/rim/nodes",
+      "requestSchema": {
+        "type": "object",
+        "required": ["namespace"],
+        "properties": {
+          "namespace": { "type": "string" },
+          "limit": { "type": "integer", "default": 100 }
+        }
+      },
+      "responseSchema": {
+        "type": "object",
+        "required": ["data"],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "namespace", "type"],
+              "properties": {
+                "id": { "type": "string" },
+                "namespace": { "type": "string" },
+                "type": { "type": "string" },
+                "summary": { "type": "object" }
+              }
+            }
+          },
+          "pagination": { "type": "object" }
+        }
+      },
+      "expectedStatus": 200,
+      "slaMillis": 300,
+      "requiredHeaders": []
+    },
+    {
+      "name": "getActiveSignals",
+      "description": "Get active signals for monitoring",
+      "method": "GET",
+      "path": "/api/v1/signals",
+      "requestSchema": {
+        "type": "object",
+        "properties": {
+          "active": { "type": "boolean", "default": true },
+          "rimNodeId": { "type": "string" },
+          "since": { "type": "integer" }
+        }
+      },
+      "responseSchema": {
+        "type": "object",
+        "required": ["data"],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "type", "strength", "rimNodeId"],
+              "properties": {
+                "id": { "type": "string" },
+                "type": { "type": "string" },
+                "strength": { "type": "number" },
+                "rimNodeId": { "type": "string" },
+                "createdAt": { "type": "string", "format": "date-time" },
+                "expiresAt": { "type": "string", "format": "date-time" }
+              }
+            }
+          }
+        }
+      },
+      "expectedStatus": 200,
+      "slaMillis": 250,
+      "requiredHeaders": []
+    },
+    {
+      "name": "submitObservation",
+      "description": "Submit an observation to a RIM node",
+      "method": "POST",
+      "path": "/api/v1/rim/nodes/{rimNodeId}/observations",
+      "requestSchema": {
+        "type": "object",
+        "required": ["data", "source"],
+        "properties": {
+          "data": { "type": "object" },
+          "source": { "type": "string" },
+          "confidence": { "type": "number" },
+          "timestamp": { "type": "integer" }
+        }
+      },
+      "responseSchema": {
+        "type": "object",
+        "required": ["observationId", "accepted"],
+        "properties": {
+          "observationId": { "type": "string" },
+          "accepted": { "type": "boolean" },
+          "processedAt": { "type": "string", "format": "date-time" },
+          "signalsGenerated": { "type": "integer" }
+        }
+      },
+      "expectedStatus": 202,
+      "slaMillis": 200,
+      "requiredHeaders": ["X-Correlation-ID"]
+    }
+  ]
+}

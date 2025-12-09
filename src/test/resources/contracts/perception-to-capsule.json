@@ -1,0 +1,96 @@
+{
+  "consumer": "PERCEPTION",
+  "provider": "CAPSULE",
+  "version": "1.0.0",
+  "description": "Contract for PERCEPTION consuming CAPSULE APIs for temporal queries and capsule creation",
+  "defaultSla": {
+    "p50Millis": 100,
+    "p95Millis": 500,
+    "p99Millis": 1000,
+    "availabilityPercent": 99.9,
+    "errorRatePercent": 1
+  },
+  "interactions": [
+    {
+      "name": "createCapsule",
+      "description": "Create a new capsule from PERCEPTION signal data",
+      "method": "POST",
+      "path": "/api/v1/capsules",
+      "requestSchema": {
+        "type": "object",
+        "required": ["scopeId", "content", "source", "timestamp"],
+        "properties": {
+          "scopeId": { "type": "string", "description": "RIM node or entity scope" },
+          "content": { "type": "object", "description": "Capsule content payload" },
+          "source": { "type": "string", "description": "Source system identifier" },
+          "timestamp": { "type": "integer", "description": "Event timestamp (epoch ms)" },
+          "correlationId": { "type": "string" },
+          "tags": { "type": "object" }
+        }
+      },
+      "responseSchema": {
+        "type": "object",
+        "required": ["id", "scopeId", "createdAt"],
+        "properties": {
+          "id": { "type": "string" },
+          "scopeId": { "type": "string" },
+          "content": { "type": "object" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "version": { "type": "integer" }
+        }
+      },
+      "expectedStatus": 201,
+      "slaMillis": 500,
+      "requiredHeaders": ["X-Tenant-ID", "X-Correlation-ID"]
+    },
+    {
+      "name": "getCapsule",
+      "description": "Retrieve a specific capsule by ID",
+      "method": "GET",
+      "path": "/api/v1/capsules/{capsuleId}",
+      "requestSchema": {},
+      "responseSchema": {
+        "type": "object",
+        "required": ["id", "scopeId", "content", "createdAt"],
+        "properties": {
+          "id": { "type": "string" },
+          "scopeId": { "type": "string" },
+          "content": { "type": "object" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "version": { "type": "integer" },
+          "lineage": { "type": "object" }
+        }
+      },
+      "expectedStatus": 200,
+      "slaMillis": 200,
+      "requiredHeaders": []
+    },
+    {
+      "name": "getTemporalSlice",
+      "description": "Get state at a specific point in time",
+      "method": "GET",
+      "path": "/api/v1/temporal/slice",
+      "requestSchema": {
+        "type": "object",
+        "required": ["scopeId", "timestamp"],
+        "properties": {
+          "scopeId": { "type": "string" },
+          "timestamp": { "type": "integer" }
+        }
+      },
+      "responseSchema": {
+        "type": "object",
+        "required": ["scopeId", "timestamp", "state"],
+        "properties": {
+          "scopeId": { "type": "string" },
+          "timestamp": { "type": "integer" },
+          "state": { "type": "object" },
+          "confidence": { "type": "number" }
+        }
+      },
+      "expectedStatus": 200,
+      "slaMillis": 300,
+      "requiredHeaders": []
+    }
+  ]
+}

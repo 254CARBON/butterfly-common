@@ -1,0 +1,140 @@
+{
+  "consumer": "CORTEX",
+  "provider": "SYNAPSE",
+  "version": "1.0.0",
+  "description": "Contract for CORTEX AI agents consuming SYNAPSE APIs for tool execution",
+  "defaultSla": {
+    "p50Millis": 500,
+    "p95Millis": 2000,
+    "p99Millis": 5000,
+    "availabilityPercent": 99.0,
+    "errorRatePercent": 3
+  },
+  "interactions": [
+    {
+      "name": "listTools",
+      "description": "List available tools for agent use",
+      "method": "GET",
+      "path": "/api/v1/tools",
+      "requestSchema": {
+        "type": "object",
+        "properties": {
+          "category": { "type": "string" },
+          "enabled": { "type": "boolean", "default": true }
+        }
+      },
+      "responseSchema": {
+        "type": "object",
+        "required": ["data"],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "name", "description"],
+              "properties": {
+                "id": { "type": "string" },
+                "name": { "type": "string" },
+                "description": { "type": "string" },
+                "category": { "type": "string" },
+                "parameters": { "type": "object" },
+                "requiresApproval": { "type": "boolean" },
+                "riskLevel": { 
+                  "type": "string",
+                  "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "expectedStatus": 200,
+      "slaMillis": 300,
+      "requiredHeaders": []
+    },
+    {
+      "name": "getTool",
+      "description": "Get detailed tool information",
+      "method": "GET",
+      "path": "/api/v1/tools/{toolId}",
+      "requestSchema": {},
+      "responseSchema": {
+        "type": "object",
+        "required": ["id", "name", "description", "parameters"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "category": { "type": "string" },
+          "parameters": {
+            "type": "object",
+            "description": "JSON Schema for tool parameters"
+          },
+          "examples": { "type": "array" },
+          "requiresApproval": { "type": "boolean" },
+          "riskLevel": { "type": "string" },
+          "documentation": { "type": "string" }
+        }
+      },
+      "expectedStatus": 200,
+      "slaMillis": 200,
+      "requiredHeaders": []
+    },
+    {
+      "name": "executeToolForAgent",
+      "description": "Execute a tool call from an AI agent",
+      "method": "POST",
+      "path": "/api/v1/actions",
+      "requestSchema": {
+        "type": "object",
+        "required": ["toolId", "parameters"],
+        "properties": {
+          "toolId": { "type": "string" },
+          "parameters": { "type": "object" },
+          "agentId": { "type": "string", "description": "CORTEX agent identifier" },
+          "taskId": { "type": "string", "description": "CORTEX task identifier" },
+          "conversationId": { "type": "string" },
+          "correlationId": { "type": "string" },
+          "timeout": { "type": "integer", "description": "Timeout in milliseconds" }
+        }
+      },
+      "responseSchema": {
+        "type": "object",
+        "required": ["actionId", "status"],
+        "properties": {
+          "actionId": { "type": "string" },
+          "status": { "type": "string" },
+          "result": { "type": "object" },
+          "error": { "type": "string" },
+          "executedAt": { "type": "string", "format": "date-time" },
+          "durationMs": { "type": "integer" }
+        }
+      },
+      "expectedStatus": 202,
+      "slaMillis": 1000,
+      "requiredHeaders": ["X-Correlation-ID", "X-CORTEX-Agent-ID"]
+    },
+    {
+      "name": "cancelAction",
+      "description": "Cancel a running action",
+      "method": "POST",
+      "path": "/api/v1/actions/{actionId}/cancel",
+      "requestSchema": {
+        "type": "object",
+        "properties": {
+          "reason": { "type": "string" }
+        }
+      },
+      "responseSchema": {
+        "type": "object",
+        "properties": {
+          "cancelled": { "type": "boolean" },
+          "status": { "type": "string" }
+        }
+      },
+      "expectedStatus": 200,
+      "slaMillis": 500,
+      "requiredHeaders": []
+    }
+  ]
+}

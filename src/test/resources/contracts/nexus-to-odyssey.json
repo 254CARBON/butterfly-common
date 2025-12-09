@@ -1,0 +1,113 @@
+{
+  "consumer": "NEXUS",
+  "provider": "ODYSSEY",
+  "version": "1.0.0",
+  "description": "Contract for NEXUS consuming ODYSSEY APIs for world state and strategy information",
+  "defaultSla": {
+    "p50Millis": 100,
+    "p95Millis": 400,
+    "p99Millis": 800,
+    "availabilityPercent": 99.9,
+    "errorRatePercent": 1
+  },
+  "interactions": [
+    {
+      "name": "getWorldState",
+      "description": "Get current world state model",
+      "method": "GET",
+      "path": "/api/v1/world-state",
+      "requestSchema": {},
+      "responseSchema": {
+        "type": "object",
+        "required": ["timestamp", "entities", "stress"],
+        "properties": {
+          "timestamp": { "type": "string", "format": "date-time" },
+          "entities": { "type": "object" },
+          "stress": { "type": "number" },
+          "coherence": { "type": "number" },
+          "activeScenarios": { "type": "integer" }
+        }
+      },
+      "expectedStatus": 200,
+      "slaMillis": 300,
+      "requiredHeaders": []
+    },
+    {
+      "name": "getPaths",
+      "description": "Get narrative paths for a scope",
+      "method": "GET",
+      "path": "/api/v1/paths",
+      "requestSchema": {
+        "type": "object",
+        "properties": {
+          "scopeId": { "type": "string" },
+          "horizon": { "type": "string", "enum": ["SHORT", "MEDIUM", "LONG"] }
+        }
+      },
+      "responseSchema": {
+        "type": "object",
+        "required": ["data"],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "weight", "nodes"],
+              "properties": {
+                "id": { "type": "string" },
+                "weight": { "type": "number" },
+                "nodes": { "type": "array" },
+                "horizon": { "type": "string" },
+                "confidence": { "type": "number" }
+              }
+            }
+          }
+        }
+      },
+      "expectedStatus": 200,
+      "slaMillis": 400,
+      "requiredHeaders": []
+    },
+    {
+      "name": "getActor",
+      "description": "Get actor model details",
+      "method": "GET",
+      "path": "/api/v1/actors/{actorId}",
+      "requestSchema": {},
+      "responseSchema": {
+        "type": "object",
+        "required": ["id", "type", "parameters"],
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "type": "string" },
+          "parameters": { "type": "object" },
+          "lastUpdated": { "type": "string", "format": "date-time" },
+          "confidence": { "type": "number" }
+        }
+      },
+      "expectedStatus": 200,
+      "slaMillis": 200,
+      "requiredHeaders": []
+    },
+    {
+      "name": "getIgnoranceSurface",
+      "description": "Get ignorance surface for unknown factors",
+      "method": "GET",
+      "path": "/api/v1/ignorance",
+      "requestSchema": {},
+      "responseSchema": {
+        "type": "object",
+        "required": ["dimensions", "hotspots"],
+        "properties": {
+          "dimensions": { "type": "array" },
+          "hotspots": { "type": "array" },
+          "totalUncertainty": { "type": "number" },
+          "timestamp": { "type": "string", "format": "date-time" }
+        }
+      },
+      "expectedStatus": 200,
+      "slaMillis": 500,
+      "requiredHeaders": []
+    }
+  ]
+}
