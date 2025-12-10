@@ -1,0 +1,149 @@
+{
+  "namespace": "com.z254.butterfly.common.avro",
+  "type": "record",
+  "name": "ModelLifecycleEvent",
+  "doc": "Event representing a model lifecycle change from PERCEPTION's perception-models module. Published when models are registered, transition stages, detect drift, or complete evaluation.",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": "string",
+      "doc": "Unique identifier for this event"
+    },
+    {
+      "name": "eventType",
+      "type": {
+        "type": "enum",
+        "name": "ModelLifecycleEventType",
+        "symbols": [
+          "REGISTERED",
+          "STAGE_TRANSITION",
+          "DRIFT_DETECTED",
+          "EVALUATION_COMPLETED",
+          "PROMOTED",
+          "ARCHIVED",
+          "REJECTED",
+          "RETRAIN_REQUESTED",
+          "ROLLBACK_REQUESTED"
+        ]
+      },
+      "doc": "Type of lifecycle event"
+    },
+    {
+      "name": "modelName",
+      "type": "string",
+      "doc": "Name of the model"
+    },
+    {
+      "name": "modelVersion",
+      "type": "string",
+      "doc": "Version string of the model"
+    },
+    {
+      "name": "previousStage",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Previous stage (for STAGE_TRANSITION events)"
+    },
+    {
+      "name": "currentStage",
+      "type": "string",
+      "doc": "Current stage: STAGING, CANARY, PRODUCTION, ARCHIVED, REJECTED"
+    },
+    {
+      "name": "platoArtifactId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "PLATO artifact ID if this model is registered with PLATO"
+    },
+    {
+      "name": "platoSpecIds",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "default": [],
+      "doc": "PLATO spec IDs governing this model (performance, bias, dependency)"
+    },
+    {
+      "name": "metrics",
+      "type": {
+        "type": "map",
+        "values": "double"
+      },
+      "default": {},
+      "doc": "Model metrics: accuracy, latency_p50, latency_p99, throughput, etc."
+    },
+    {
+      "name": "driftScore",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "Current drift score (PSI or similar)"
+    },
+    {
+      "name": "driftAction",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Recommended drift action: NONE, MONITOR, INVESTIGATE, RETRAIN_SUGGESTED, RETRAIN_REQUIRED, ROLLBACK"
+    },
+    {
+      "name": "artifactPath",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Path to model artifact in storage"
+    },
+    {
+      "name": "artifactHash",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "SHA256 hash of model artifact for integrity verification"
+    },
+    {
+      "name": "framework",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "ML framework: tensorflow, pytorch, sklearn, etc."
+    },
+    {
+      "name": "lineageId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Lineage tracking ID linking to parent models"
+    },
+    {
+      "name": "featureDependencies",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "default": [],
+      "doc": "List of feature artifact IDs this model depends on"
+    },
+    {
+      "name": "tenantId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Tenant ID for multi-tenant deployments"
+    },
+    {
+      "name": "correlationId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Correlation ID for distributed tracing"
+    },
+    {
+      "name": "timestamp",
+      "type": "long",
+      "logicalType": "timestamp-millis",
+      "doc": "Event timestamp in milliseconds since epoch"
+    },
+    {
+      "name": "metadata",
+      "type": {
+        "type": "map",
+        "values": "string"
+      },
+      "default": {},
+      "doc": "Additional metadata key-value pairs"
+    }
+  ]
+}

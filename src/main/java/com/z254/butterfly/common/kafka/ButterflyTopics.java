@@ -70,6 +70,44 @@ public final class ButterflyTopics {
     public static final String PERCEPTION_TO_CAPSULE = "perception.capsule.handoff";
     
     // =========================================
+    // PERCEPTION Model/Feature Lifecycle Topics
+    // =========================================
+    
+    /**
+     * Model lifecycle events from perception-models.
+     * Includes: registration, stage transitions, drift alerts, evaluations.
+     * Schema: ModelLifecycleEvent.avsc
+     */
+    public static final String PERCEPTION_MODEL_LIFECYCLE = "perception.models.lifecycle";
+    
+    /**
+     * Model drift detection events from perception-models.
+     * Published when drift exceeds configured thresholds.
+     * Schema: ModelDriftEvent.avsc (existing in perception-models)
+     */
+    public static final String PERCEPTION_MODEL_DRIFT = "perception.models.drift";
+    
+    /**
+     * Model quality metrics events.
+     * Periodic metrics snapshots for PLATO ResearchOS integration.
+     * Schema: ModelQualityMetrics.avsc
+     */
+    public static final String PERCEPTION_MODEL_METRICS = "perception.models.metrics";
+    
+    /**
+     * Feature lifecycle events from perception-features.
+     * Includes: version creation, drift detection, schema changes.
+     * Schema: FeatureLifecycleEvent.avsc
+     */
+    public static final String PERCEPTION_FEATURE_LIFECYCLE = "perception.features.lifecycle";
+    
+    /**
+     * Feature drift detection events.
+     * Schema: FeatureDriftEvent.avsc
+     */
+    public static final String PERCEPTION_FEATURE_DRIFT = "perception.features.drift";
+    
+    // =========================================
     // CAPSULE Topics
     // =========================================
     
@@ -147,6 +185,13 @@ public final class ButterflyTopics {
      */
     public static final String ODYSSEY_EXPERIMENTS = "odyssey.experiments.outcomes";
     
+    /**
+     * Strategy outcome events with full attribution.
+     * Includes: outcome status, P&L impact, model/feature/spec attribution.
+     * Schema: StrategyOutcomeAttribution.avsc
+     */
+    public static final String ODYSSEY_STRATEGY_OUTCOMES = "odyssey.strategy.outcomes";
+    
     // =========================================
     // NEXUS Topics
     // =========================================
@@ -208,6 +253,27 @@ public final class ButterflyTopics {
      * Plan execution events.
      */
     public static final String PLATO_PLANS = "plato.plans.execution";
+    
+    /**
+     * Model artifact registration/update events.
+     * Published when PERCEPTION models are registered as PLATO artifacts.
+     * Schema: PlatoArtifactEvent.avsc
+     */
+    public static final String PLATO_MODEL_ARTIFACTS = "plato.artifacts.model.events";
+    
+    /**
+     * Feature artifact registration/update events.
+     * Published when PERCEPTION features are registered as PLATO artifacts.
+     * Schema: PlatoArtifactEvent.avsc
+     */
+    public static final String PLATO_FEATURE_ARTIFACTS = "plato.artifacts.feature.events";
+    
+    /**
+     * Spec violation events for model/feature quality.
+     * Published when performance/bias/quality specs are violated.
+     * Schema: SpecViolationEvent.avsc
+     */
+    public static final String PLATO_SPEC_VIOLATIONS = "plato.specs.violations";
     
     // =========================================
     // SYNAPSE Topics
@@ -338,6 +404,49 @@ public final class ButterflyTopics {
      * RIM node status changes.
      */
     public static final String RIM_NODE_STATUS = "rim.node.status";
+    
+    // =========================================
+    // Identity & Traceability Topics
+    // =========================================
+    
+    /**
+     * Event graph updates from NEXUS.
+     * Published when event graphs are updated or completed.
+     * Schema: EventGraphUpdate.avsc
+     */
+    public static final String EVENT_GRAPH_UPDATES = "nexus.graph.updates";
+    
+    /**
+     * Decision Episode creation events from CAPSULE.
+     * Published when decision episodes are created or completed.
+     * Schema: DecisionEpisodeEvent.avsc
+     */
+    public static final String DECISION_EPISODES = "capsule.episodes.created";
+    
+    /**
+     * Decision Episode event appends.
+     * Published when new events are appended to a decision episode.
+     */
+    public static final String DECISION_EPISODE_EVENTS = "capsule.episodes.events";
+    
+    /**
+     * Connector RIM mapping events from SYNAPSE.
+     * Published when external resources are mapped to RIM nodes.
+     * Schema: ConnectorRimMapping.avsc
+     */
+    public static final String CONNECTOR_RIM_MAPPINGS = "synapse.rim.mappings";
+    
+    /**
+     * RIM identity resolution requests.
+     * Used for resolving external system identities to RIM nodes.
+     */
+    public static final String RIM_IDENTITY_RESOLUTION = "butterfly.rim.identity.resolution";
+    
+    /**
+     * Causal chain discovery events.
+     * Published when NEXUS discovers new causal chains.
+     */
+    public static final String CAUSAL_CHAINS = "nexus.causal.chains";
     
     // =========================================
     // Dead Letter Queue Topics

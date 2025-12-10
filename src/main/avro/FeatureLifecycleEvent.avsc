@@ -1,0 +1,162 @@
+{
+  "namespace": "com.z254.butterfly.common.avro",
+  "type": "record",
+  "name": "FeatureLifecycleEvent",
+  "doc": "Event representing a feature lifecycle change from PERCEPTION's perception-features module. Published when features are created, versioned, detect drift, or change schema.",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": "string",
+      "doc": "Unique identifier for this event"
+    },
+    {
+      "name": "eventType",
+      "type": {
+        "type": "enum",
+        "name": "FeatureLifecycleEventType",
+        "symbols": [
+          "CREATED",
+          "VERSION_CREATED",
+          "DRIFT_DETECTED",
+          "SCHEMA_CHANGED",
+          "DEPRECATED",
+          "ARCHIVED",
+          "QUALITY_VIOLATION"
+        ]
+      },
+      "doc": "Type of lifecycle event"
+    },
+    {
+      "name": "featureGroup",
+      "type": "string",
+      "doc": "Feature group name"
+    },
+    {
+      "name": "featureName",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Individual feature name (for single-feature events)"
+    },
+    {
+      "name": "version",
+      "type": "string",
+      "doc": "Version string of the feature"
+    },
+    {
+      "name": "schemaVersion",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Schema version for this feature"
+    },
+    {
+      "name": "previousVersion",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Previous version (for VERSION_CREATED events)"
+    },
+    {
+      "name": "status",
+      "type": "string",
+      "doc": "Feature status: ACTIVE, DEPRECATED, ARCHIVED, PENDING, INVALID"
+    },
+    {
+      "name": "platoArtifactId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "PLATO artifact ID if this feature is registered with PLATO"
+    },
+    {
+      "name": "platoSpecIds",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "default": [],
+      "doc": "PLATO spec IDs governing this feature (quality, dependency)"
+    },
+    {
+      "name": "driftMetrics",
+      "type": {
+        "type": "map",
+        "values": "double"
+      },
+      "default": {},
+      "doc": "Drift metrics: psiScore, klDivergence, nullRateChange, etc."
+    },
+    {
+      "name": "qualityMetrics",
+      "type": {
+        "type": "map",
+        "values": "double"
+      },
+      "default": {},
+      "doc": "Quality metrics: nullRate, completeness, distinctCount, etc."
+    },
+    {
+      "name": "distributionStats",
+      "type": {
+        "type": "map",
+        "values": "double"
+      },
+      "default": {},
+      "doc": "Distribution statistics: mean, stdDev, min, max, median, etc."
+    },
+    {
+      "name": "dependentModels",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "default": [],
+      "doc": "Model artifact IDs that depend on this feature"
+    },
+    {
+      "name": "upstreamSources",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "default": [],
+      "doc": "RIM node IDs or source references for data lineage"
+    },
+    {
+      "name": "pipelineId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Feature pipeline ID that produces this feature"
+    },
+    {
+      "name": "entityType",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Entity type this feature describes (for Feast integration)"
+    },
+    {
+      "name": "tenantId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Tenant ID for multi-tenant deployments"
+    },
+    {
+      "name": "correlationId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Correlation ID for distributed tracing"
+    },
+    {
+      "name": "timestamp",
+      "type": "long",
+      "logicalType": "timestamp-millis",
+      "doc": "Event timestamp in milliseconds since epoch"
+    },
+    {
+      "name": "metadata",
+      "type": {
+        "type": "map",
+        "values": "string"
+      },
+      "default": {},
+      "doc": "Additional metadata key-value pairs"
+    }
+  ]
+}

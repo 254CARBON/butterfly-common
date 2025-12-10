@@ -1,0 +1,254 @@
+{
+  "namespace": "com.z254.butterfly.common.avro",
+  "type": "record",
+  "name": "StrategyOutcomeAttribution",
+  "doc": "Strategy outcome event with full model/feature/spec attribution. Published by ODYSSEY when strategies complete, enabling NEXUS to correlate outcomes with contributing artifacts.",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": "string",
+      "doc": "Unique identifier for this event"
+    },
+    {
+      "name": "strategyId",
+      "type": "string",
+      "doc": "ID of the strategy proposal that was executed"
+    },
+    {
+      "name": "pathId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "ODYSSEY path ID that generated this strategy"
+    },
+    {
+      "name": "pathName",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Human-readable name of the originating path"
+    },
+    {
+      "name": "outcome",
+      "type": {
+        "type": "enum",
+        "name": "StrategyOutcome",
+        "symbols": [
+          "SUCCESS",
+          "PARTIAL_SUCCESS",
+          "FAILURE",
+          "TIMEOUT",
+          "CANCELLED",
+          "BLOCKED_BY_GOVERNANCE"
+        ]
+      },
+      "doc": "Final outcome of the strategy execution"
+    },
+    {
+      "name": "pnlImpact",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "Actual P&L impact from this strategy"
+    },
+    {
+      "name": "expectedPnlImpact",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "Expected P&L impact from the original proposal"
+    },
+    {
+      "name": "confidenceRealized",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "How accurate was the confidence estimate? 1.0 = perfectly calibrated"
+    },
+    {
+      "name": "modelReferences",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "ModelReference",
+          "fields": [
+            {
+              "name": "platoArtifactId",
+              "type": "string",
+              "doc": "PLATO artifact ID for the model"
+            },
+            {
+              "name": "modelName",
+              "type": "string",
+              "doc": "Model name"
+            },
+            {
+              "name": "modelVersion",
+              "type": "string",
+              "doc": "Model version used"
+            },
+            {
+              "name": "contributionWeight",
+              "type": "double",
+              "doc": "How much this model contributed to the strategy (0-1)"
+            },
+            {
+              "name": "driftScoreAtExecution",
+              "type": ["null", "double"],
+              "default": null,
+              "doc": "Model drift score at time of execution"
+            }
+          ]
+        }
+      },
+      "default": [],
+      "doc": "Models used in this strategy"
+    },
+    {
+      "name": "featureReferences",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "FeatureReference",
+          "fields": [
+            {
+              "name": "platoArtifactId",
+              "type": "string",
+              "doc": "PLATO artifact ID for the feature"
+            },
+            {
+              "name": "featureGroup",
+              "type": "string",
+              "doc": "Feature group name"
+            },
+            {
+              "name": "featureName",
+              "type": ["null", "string"],
+              "default": null,
+              "doc": "Individual feature name"
+            },
+            {
+              "name": "version",
+              "type": "string",
+              "doc": "Feature version used"
+            },
+            {
+              "name": "contributionWeight",
+              "type": "double",
+              "doc": "How much this feature contributed to the strategy (0-1)"
+            },
+            {
+              "name": "driftScoreAtExecution",
+              "type": ["null", "double"],
+              "default": null,
+              "doc": "Feature drift score at time of execution"
+            }
+          ]
+        }
+      },
+      "default": [],
+      "doc": "Features used in this strategy"
+    },
+    {
+      "name": "governingSpecs",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "SpecReference",
+          "fields": [
+            {
+              "name": "specId",
+              "type": "string",
+              "doc": "PLATO spec ID"
+            },
+            {
+              "name": "specType",
+              "type": "string",
+              "doc": "Type of spec: MODEL_PERFORMANCE, MODEL_BIAS_THRESHOLD, FEATURE_QUALITY, etc."
+            },
+            {
+              "name": "specVersion",
+              "type": "string",
+              "doc": "Spec version applied"
+            },
+            {
+              "name": "wasViolated",
+              "type": "boolean",
+              "default": false,
+              "doc": "Whether this spec was violated during execution"
+            },
+            {
+              "name": "violationDetails",
+              "type": ["null", "string"],
+              "default": null,
+              "doc": "Details of the violation if any"
+            }
+          ]
+        }
+      },
+      "default": [],
+      "doc": "PLATO specs that governed this strategy"
+    },
+    {
+      "name": "rimScope",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "RIM scope ID for this strategy (e.g., rim:scenario:market:APAC)"
+    },
+    {
+      "name": "executionDurationMs",
+      "type": ["null", "long"],
+      "default": null,
+      "doc": "How long the strategy took to execute in milliseconds"
+    },
+    {
+      "name": "horizon",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Strategy horizon: SHORT, MEDIUM, LONG"
+    },
+    {
+      "name": "proposalType",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Type of proposal: NARRATIVE_MISPRICING, STRATEGIC_REBALANCE, RISK_MITIGATION, etc."
+    },
+    {
+      "name": "schoolCode",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "School of thought that generated this strategy (for cognitive pluralism)"
+    },
+    {
+      "name": "tenantId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Tenant ID for multi-tenant deployments"
+    },
+    {
+      "name": "correlationId",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Correlation ID for distributed tracing"
+    },
+    {
+      "name": "executedAt",
+      "type": "long",
+      "logicalType": "timestamp-millis",
+      "doc": "When the strategy was executed"
+    },
+    {
+      "name": "completedAt",
+      "type": "long",
+      "logicalType": "timestamp-millis",
+      "doc": "When the strategy completed"
+    },
+    {
+      "name": "metadata",
+      "type": {
+        "type": "map",
+        "values": "string"
+      },
+      "default": {},
+      "doc": "Additional metadata key-value pairs"
+    }
+  ]
+}
