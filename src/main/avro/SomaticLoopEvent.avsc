@@ -1,0 +1,289 @@
+{
+  "namespace": "com.z254.butterfly.common.somatic.avro",
+  "type": "record",
+  "name": "SomaticLoopEvent",
+  "doc": "Event schema for the Somatic Loop, representing replay stream frames and session lifecycle events. Enables downstream systems (CORTEX, ODYSSEY) to re-experience historical CAPSULE sequences.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": "string",
+      "doc": "Globally unique event identifier (UUID)"
+    },
+    {
+      "name": "event_type",
+      "type": {
+        "type": "enum",
+        "name": "SomaticEventType",
+        "symbols": [
+          "REPLAY_FRAME",
+          "SNAPSHOT",
+          "SESSION_STARTED",
+          "SESSION_PAUSED",
+          "SESSION_RESUMED",
+          "SESSION_COMPLETED",
+          "SESSION_CANCELLED",
+          "SESSION_FAILED"
+        ]
+      },
+      "doc": "Type of somatic loop event"
+    },
+    {
+      "name": "timestamp",
+      "type": "long",
+      "doc": "Event timestamp in milliseconds since epoch"
+    },
+    {
+      "name": "correlation_id",
+      "type": "string",
+      "doc": "Correlation ID for distributed tracing"
+    },
+    {
+      "name": "session_id",
+      "type": "string",
+      "doc": "Unique identifier for the replay session"
+    },
+    {
+      "name": "scope_id",
+      "type": "string",
+      "doc": "Scope ID being replayed (rim:{nodeType}:{namespace}:{localId})"
+    },
+    {
+      "name": "replay_config",
+      "type": ["null", {
+        "type": "record",
+        "name": "ReplayConfigRecord",
+        "doc": "Configuration for the replay session",
+        "fields": [
+          {
+            "name": "from_time",
+            "type": "long",
+            "doc": "Start timestamp for replay in milliseconds since epoch"
+          },
+          {
+            "name": "to_time",
+            "type": "long",
+            "doc": "End timestamp for replay in milliseconds since epoch"
+          },
+          {
+            "name": "vantage_mode",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "Optional vantage mode filter"
+          },
+          {
+            "name": "playback_speed",
+            "type": "double",
+            "default": 1.0,
+            "doc": "Playback speed multiplier (1.0 = real-time)"
+          },
+          {
+            "name": "min_frame_delay_ms",
+            "type": "long",
+            "default": 10,
+            "doc": "Minimum delay between frames in milliseconds"
+          },
+          {
+            "name": "max_frame_delay_ms",
+            "type": "long",
+            "default": 5000,
+            "doc": "Maximum delay between frames in milliseconds"
+          },
+          {
+            "name": "filter_tags",
+            "type": ["null", {"type": "array", "items": "string"}],
+            "default": null,
+            "doc": "Optional tags to filter CAPSULEs"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Replay configuration (present for SESSION_STARTED events)"
+    },
+    {
+      "name": "frame",
+      "type": ["null", {
+        "type": "record",
+        "name": "ReplayFrameRecord",
+        "doc": "A single frame in the replay stream",
+        "fields": [
+          {
+            "name": "frame_index",
+            "type": "int",
+            "doc": "Zero-based index of this frame in the session"
+          },
+          {
+            "name": "total_frames",
+            "type": "int",
+            "doc": "Total number of frames in the session"
+          },
+          {
+            "name": "progress",
+            "type": "double",
+            "doc": "Progress through the session (0.0 to 1.0)"
+          },
+          {
+            "name": "original_timestamp",
+            "type": "long",
+            "doc": "Original CAPSULE timestamp in milliseconds since epoch"
+          },
+          {
+            "name": "replay_timestamp",
+            "type": "long",
+            "doc": "Time this frame was emitted in milliseconds since epoch"
+          },
+          {
+            "name": "delay_until_next_ms",
+            "type": "long",
+            "doc": "Delay until the next frame in milliseconds"
+          },
+          {
+            "name": "is_last_frame",
+            "type": "boolean",
+            "doc": "Whether this is the final frame in the session"
+          },
+          {
+            "name": "capsule_summary",
+            "type": {
+              "type": "record",
+              "name": "CapsuleSummaryRecord",
+              "doc": "Summary of the CAPSULE in this frame",
+              "fields": [
+                {
+                  "name": "capsule_id",
+                  "type": "string",
+                  "doc": "Unique identifier of the CAPSULE"
+                },
+                {
+                  "name": "scope_id",
+                  "type": "string",
+                  "doc": "Scope ID of the CAPSULE"
+                },
+                {
+                  "name": "center_ts_utc",
+                  "type": "long",
+                  "doc": "Center timestamp of the CAPSULE in milliseconds since epoch"
+                },
+                {
+                  "name": "vantage_mode",
+                  "type": ["null", "string"],
+                  "default": null,
+                  "doc": "Vantage mode of the CAPSULE"
+                },
+                {
+                  "name": "entity_count",
+                  "type": ["null", "int"],
+                  "default": null,
+                  "doc": "Number of entities in the CAPSULE"
+                },
+                {
+                  "name": "field_count",
+                  "type": ["null", "int"],
+                  "default": null,
+                  "doc": "Number of fields in the CAPSULE"
+                },
+                {
+                  "name": "stability",
+                  "type": ["null", "double"],
+                  "default": null,
+                  "doc": "Overall stability score"
+                },
+                {
+                  "name": "confidence",
+                  "type": ["null", "double"],
+                  "default": null,
+                  "doc": "Overall confidence score"
+                }
+              ]
+            },
+            "doc": "Summary of the CAPSULE being replayed"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Frame data (present for REPLAY_FRAME and SNAPSHOT events)"
+    },
+    {
+      "name": "session_status",
+      "type": ["null", {
+        "type": "record",
+        "name": "SessionStatusRecord",
+        "doc": "Current status of the replay session",
+        "fields": [
+          {
+            "name": "current_index",
+            "type": "int",
+            "doc": "Current frame index"
+          },
+          {
+            "name": "total_frames",
+            "type": "int",
+            "doc": "Total number of frames"
+          },
+          {
+            "name": "progress",
+            "type": "double",
+            "doc": "Progress through the session (0.0 to 1.0)"
+          },
+          {
+            "name": "is_paused",
+            "type": "boolean",
+            "doc": "Whether the session is currently paused"
+          },
+          {
+            "name": "started_at",
+            "type": "long",
+            "doc": "Session start time in milliseconds since epoch"
+          },
+          {
+            "name": "elapsed_time_ms",
+            "type": "long",
+            "doc": "Elapsed time since session start in milliseconds"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Session status (present for lifecycle events)"
+    },
+    {
+      "name": "error",
+      "type": ["null", {
+        "type": "record",
+        "name": "SessionErrorRecord",
+        "doc": "Error information for failed sessions",
+        "fields": [
+          {
+            "name": "error_code",
+            "type": "string",
+            "doc": "Error code"
+          },
+          {
+            "name": "error_message",
+            "type": "string",
+            "doc": "Human-readable error message"
+          },
+          {
+            "name": "stack_trace",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "Optional stack trace for debugging"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Error details (present for SESSION_FAILED events)"
+    },
+    {
+      "name": "metadata",
+      "type": ["null", {"type": "map", "values": "string"}],
+      "default": null,
+      "doc": "Additional event metadata"
+    },
+    {
+      "name": "schema_version",
+      "type": "string",
+      "default": "1.0.0",
+      "doc": "Schema version for compatibility tracking"
+    }
+  ]
+}
+

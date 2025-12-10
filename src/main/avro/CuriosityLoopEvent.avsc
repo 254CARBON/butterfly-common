@@ -1,0 +1,247 @@
+{
+  "namespace": "com.z254.butterfly.common.nexus.avro",
+  "type": "record",
+  "name": "CuriosityLoopEvent",
+  "doc": "Event schema for CHRYSALIS Curiosity Loop - triggers autonomous investigation of ignorance zones. Published when NEXUS detects high-value uncertainty that requires active sensing.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": "string",
+      "doc": "Globally unique event identifier (UUID)"
+    },
+    {
+      "name": "event_type",
+      "type": {
+        "type": "enum",
+        "name": "CuriosityEventType",
+        "symbols": [
+          "IGNORANCE_DETECTED",
+          "INVESTIGATION_REQUESTED",
+          "INVESTIGATION_ASSIGNED",
+          "INVESTIGATION_COMPLETED",
+          "IGNORANCE_REDUCED",
+          "INVESTIGATION_FAILED",
+          "HIGH_VALUE_BLIND_SPOT"
+        ]
+      },
+      "doc": "Type of curiosity loop event"
+    },
+    {
+      "name": "timestamp",
+      "type": "long",
+      "doc": "Event timestamp in milliseconds since epoch"
+    },
+    {
+      "name": "correlation_id",
+      "type": "string",
+      "doc": "Correlation ID for distributed tracing"
+    },
+    {
+      "name": "scope_id",
+      "type": "string",
+      "doc": "Scope for the ignorance analysis (rim:{nodeType}:{namespace}:{localId})"
+    },
+    {
+      "name": "ignorance_zone",
+      "type": {
+        "type": "record",
+        "name": "IgnoranceZone",
+        "doc": "Details of a detected ignorance zone requiring investigation",
+        "fields": [
+          {
+            "name": "zone_id",
+            "type": "string",
+            "doc": "Unique identifier for this ignorance zone"
+          },
+          {
+            "name": "node_ids",
+            "type": {"type": "array", "items": "string"},
+            "doc": "RIM node IDs within this ignorance zone"
+          },
+          {
+            "name": "ignorance_level",
+            "type": "double",
+            "doc": "Overall ignorance level (0.0 = well known, 1.0 = completely unknown)"
+          },
+          {
+            "name": "strategic_importance",
+            "type": "double",
+            "doc": "Strategic importance of this zone (0.0-1.0)"
+          },
+          {
+            "name": "priority_score",
+            "type": "double",
+            "doc": "Investigation priority = ignorance_level * strategic_importance"
+          },
+          {
+            "name": "perception_gap",
+            "type": "double",
+            "doc": "Gap in PERCEPTION visibility (0.0-1.0)"
+          },
+          {
+            "name": "odyssey_gap",
+            "type": "double",
+            "doc": "Gap in ODYSSEY projection coverage (0.0-1.0)"
+          },
+          {
+            "name": "capsule_gap",
+            "type": "double",
+            "doc": "Gap in CAPSULE historical data (0.0-1.0)"
+          },
+          {
+            "name": "missing_data_types",
+            "type": {"type": "array", "items": "string"},
+            "doc": "Types of data that are missing"
+          },
+          {
+            "name": "recommended_queries",
+            "type": {"type": "array", "items": "string"},
+            "doc": "Suggested search queries to reduce ignorance"
+          },
+          {
+            "name": "recommended_sources",
+            "type": {"type": "array", "items": "string"},
+            "doc": "Suggested data sources to query"
+          },
+          {
+            "name": "recommended_tools",
+            "type": {"type": "array", "items": "string"},
+            "doc": "Suggested SYNAPSE tools to use for investigation"
+          }
+        ]
+      },
+      "doc": "Details of the ignorance zone requiring investigation"
+    },
+    {
+      "name": "investigation",
+      "type": ["null", {
+        "type": "record",
+        "name": "InvestigationDetails",
+        "doc": "Details of an ongoing or completed investigation",
+        "fields": [
+          {
+            "name": "investigation_id",
+            "type": "string",
+            "doc": "Unique identifier for this investigation"
+          },
+          {
+            "name": "assigned_agent_id",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "CORTEX agent ID assigned to this investigation"
+          },
+          {
+            "name": "status",
+            "type": {
+              "type": "enum",
+              "name": "InvestigationStatus",
+              "symbols": ["PENDING", "IN_PROGRESS", "COMPLETED", "FAILED", "CANCELLED"]
+            },
+            "doc": "Current status of the investigation"
+          },
+          {
+            "name": "queries_executed",
+            "type": "int",
+            "default": 0,
+            "doc": "Number of queries executed"
+          },
+          {
+            "name": "tools_used",
+            "type": {"type": "array", "items": "string"},
+            "default": [],
+            "doc": "SYNAPSE tools used during investigation"
+          },
+          {
+            "name": "evidence_collected",
+            "type": "int",
+            "default": 0,
+            "doc": "Number of evidence items collected"
+          },
+          {
+            "name": "ignorance_reduction",
+            "type": "double",
+            "default": 0.0,
+            "doc": "How much ignorance was reduced (0.0-1.0)"
+          },
+          {
+            "name": "started_at",
+            "type": ["null", "long"],
+            "default": null,
+            "doc": "Investigation start timestamp"
+          },
+          {
+            "name": "completed_at",
+            "type": ["null", "long"],
+            "default": null,
+            "doc": "Investigation completion timestamp"
+          },
+          {
+            "name": "findings_summary",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "Summary of investigation findings"
+          }
+        ]
+      }],
+      "default": null,
+      "doc": "Investigation details if investigation has started"
+    },
+    {
+      "name": "trigger_context",
+      "type": {
+        "type": "record",
+        "name": "CuriosityTriggerContext",
+        "doc": "Context about what triggered this curiosity event",
+        "fields": [
+          {
+            "name": "trigger_source",
+            "type": {
+              "type": "enum",
+              "name": "TriggerSource",
+              "symbols": ["SCHEDULED_SCAN", "SYNTHESIS_RESULT", "STRATEGIC_DECISION", "ANOMALY_DETECTED", "USER_REQUESTED", "FEEDBACK_LOOP"]
+            },
+            "doc": "What triggered this curiosity event"
+          },
+          {
+            "name": "source_event_id",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "ID of the event that triggered this (if event-driven)"
+          },
+          {
+            "name": "strategic_options_blocked",
+            "type": "int",
+            "default": 0,
+            "doc": "Number of strategic options blocked by this ignorance"
+          },
+          {
+            "name": "decisions_impacted",
+            "type": {"type": "array", "items": "string"},
+            "default": [],
+            "doc": "IDs of decisions that would benefit from reduced ignorance"
+          }
+        ]
+      },
+      "doc": "Context about what triggered this curiosity event"
+    },
+    {
+      "name": "nexus_context",
+      "type": ["null", "com.z254.butterfly.common.nexus.avro.NexusContext"],
+      "default": null,
+      "doc": "NEXUS-specific context"
+    },
+    {
+      "name": "metadata",
+      "type": ["null", {"type": "map", "values": "string"}],
+      "default": null,
+      "doc": "Additional event metadata"
+    },
+    {
+      "name": "schema_version",
+      "type": "string",
+      "default": "1.0.0",
+      "doc": "Schema version for backward compatibility tracking"
+    }
+  ]
+}
+
